@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f7;
+            padding-bottom: 100px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1a73e8 0%, #004db3 100%);
+            color: white;
+            padding: 40px 20px 25px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        .success-toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #34C759;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(52, 199, 89, 0.4);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .success-toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        .top-actions {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        
+        .btn:active {
+            transform: scale(0.97);
+        }
+        
+        .btn-primary {
+            background: #1a73e8;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #34C759;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #1d1d1f;
+            border: 2px solid #e5e5e7;
+        }
+        
+        .category-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        }
+        
+        .category-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .category-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e5e5e7;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .category-input:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+        
+        .btn-delete-category {
+            padding: 12px 20px;
+            background: #FF3B30;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .item-row {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .item-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e5e7;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+        
+        .input-price {
+            max-width: 100px;
+        }
+        
+        .btn-delete-item {
+            padding: 10px;
+            background: #FF3B30;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 20px;
+            cursor: pointer;
+            min-width: 44px;
+        }
+        
+        .btn-add-item {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            color: #1a73e8;
+            border: 2px dashed #1a73e8;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 15px;
+            box-shadow: 0 -2px 20px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #86868b;
+        }
+        
+        .empty-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔐 Admin Panel</h1>
+        <p>Manage your menu</p>
+    </div>
+    
+    <div class="success-toast" id="toast">
+        ✅ Menu saved successfully!
+    </div>
+    
+    <div class="container">
+        <div class="top-actions">
+            <button class="btn btn-secondary" onclick="location.href='menu.html'">
+                ← Back
+            </button>
+            <button class="btn btn-primary" onclick="addCategory()">
+                ➕ Category
+            </button>
+        </div>
+        
+        <div id="admin-container"></div>
+    </div>
+    
+    <div class="bottom-bar">
+        <button class="btn btn-success" onclick="saveMenu()" style="flex: 1;">
+            💾 Save Changes
+        </button>
+    </div>
+
+    <script>
+        const defaultMenu = {
+            "☕ Coffee": [
+                { name: "Espresso", description: "Strong and bold Italian classic", price: "$3.00" },
+                { name: "Cappuccino", description: "Espresso with steamed milk foam", price: "$4.50" }
+            ],
+            "🥤 Smoothies": [
+                { name: "Strawberry Blast", description: "Fresh strawberries & yogurt", price: "$5.50" }
+            ],
+            "🍰 Food": [
+                { name: "Croissant", description: "Buttery and flaky pastry", price: "$3.50" }
+            ]
+        };
+
+        let menu = {};
+
+        function loadMenu() {
+            const saved = localStorage.getItem('coffeeMenu');
+            menu = saved ? JSON.parse(saved) : defaultMenu;
+        }
+
+        function displayAdmin() {
+            const container = document.getElementById('admin-container');
+            container.innerHTML = '';
+            
+            if (Object.keys(menu).length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <p>No categories yet<br>Click "➕ Category" to start</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            for (let category in menu) {
+                let html = `
+                    <div class="category-card">
+                        <div class="category-header">
+                            <input type="text" class="category-input" value="${category}"
+                                   onchange="renameCategory('${category}', this.value)">
+                            <button class="btn-delete-category" onclick="deleteCategory('${category}')">
+                                🗑️
+                            </button>
+                        </div>
+                `;
+                
+                menu[category].forEach((item, i) => {
+                    html += `
+                        <div class="item-row">
+                            <div class="item-inputs">
+                                <input type="text" placeholder="Item name" value="${item.name}"
+                                       onchange="updateItem('${category}', ${i}, 'name', this.value)">
+                                <input type="text" placeholder="Description" value="${item.description}"
+                                       onchange="updateItem('${category}', ${i}, 'description', this.value)">
+                                <div class="input-group">
+                                    <input type="text" class="input-price" placeholder="$0.00" value="${item.price}"
+                                           onchange="updateItem('${category}', ${i}, 'price', this.value)">
+                                    <button class="btn-delete-item" onclick="deleteItem('${category}', ${i})">
+                                        🗑️
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        <button class="btn-add-item" onclick="addItem('${category}')">
+                            ➕ Add Item
+                        </button>
+                    </div>
+                `;
+                
+                container.innerHTML += html;
+            }
+        }
+
+        function updateItem(category, index, field, value) {
+            menu[category][index][field] = value;
+        }
+
+        function addItem(category) {
+            menu[category].push({
+                name: "New Item",
+                description: "Add description here",
+                price: "$0.00"
+            });
+            displayAdmin();
+        }
+
+        function deleteItem(category, index) {
+            if (confirm('Delete this item?')) {
+                menu[category].splice(index, 1);
+                displayAdmin();
+            }
+        }
+
+        function addCategory() {
+            const name = prompt('Category name (e.g., ☕ Coffee):');
+            if (name && name.trim()) {
+                menu[name.trim()] = [];
+                displayAdmin();
+            }
+        }
+
+        function renameCategory(oldName, newName) {
+            if (newName && newName.trim() && newName !== oldName) {
+                menu[newName.trim()] = menu[oldName];
+                delete menu[oldName];
+                displayAdmin();
+            }
+        }
+
+        function deleteCategory(category) {
+            if (confirm(`Delete "${category}"?`)) {
+                delete menu[category];
+                displayAdmin();
+            }
+        }
+
+        function saveMenu() {
+            localStorage.setItem('coffeeMenu', JSON.stringify(menu));
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        loadMenu();
+        displayAdmin();
+    </script>
+</body>
+</html>
