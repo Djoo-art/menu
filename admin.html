@@ -3,153 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Cloud Menu Editor</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Admin - Cafe Cloud Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* All your original beautiful styles stay exactly the same */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #f3f4f6; color: #111827; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-        input, textarea { width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; margin-bottom: 10px; }
-        button { cursor: pointer; transition: all 0.2s; border: none; }
-        .login-container { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); max-width: 400px; width: 100%; }
-        .admin-panel { display: none; width: 100%; padding: 40px 20px 120px; align-self: flex-start; }
-        .admin-panel.active { display: block; }
-        .container { max-width: 850px; margin: 0 auto; }
-        .category-card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #e5e7eb; }
-        .item-editor-block { background: #f9fafb; padding: 16px; border-radius: 10px; margin-bottom: 12px; display: flex; gap: 16px; border: 1px solid #eee; }
-        .item-preview-area { width: 80px; height: 80px; border-radius: 8px; overflow: hidden; background: #ddd; flex-shrink: 0; }
-        .admin-item-photo { width: 100%; height: 100%; object-fit: cover; }
-        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 20px; border-top: 1px solid #e5e7eb; display: flex; justify-content: center; z-index: 100; }
-        .btn-save { width: 100%; max-width: 850px; padding: 16px; background: #10b981; color: white; border-radius: 8px; font-weight: 600; }
-        .error-message { color: #ef4444; font-size: 13px; margin-bottom: 10px; display: none; }
+        :root { --gold: #D4AF37; --espresso: #2C1B18; --cream: #F9F5F2; }
+        body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--espresso); margin: 0; padding-bottom: 100px; }
+        .login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--espresso); color: white; }
+        .login-card { background: white; padding: 40px; border-radius: 20px; color: var(--espresso); width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .admin-panel { display: none; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .active { display: block; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .category-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 30px; border-left: 6px solid var(--gold); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .item-row { display: flex; gap: 15px; background: #fff; padding: 15px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 10px; position: relative; }
+        .img-preview { width: 80px; height: 80px; background: #eee; border-radius: 8px; object-fit: cover; }
+        .btn { cursor: pointer; border: none; border-radius: 8px; font-weight: 700; transition: 0.3s; }
+        .btn-main { background: var(--espresso); color: white; padding: 12px 25px; width: 100%; }
+        .btn-save { background: #10b981; color: white; padding: 20px; font-size: 18px; width: 100%; max-width: 800px; }
+        .file-input { font-size: 12px; margin-top: 5px; }
+        .delete-btn { color: #ef4444; background: none; font-size: 12px; margin-top: 5px; }
+        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; border-top: 2px solid var(--gold); display: flex; justify-content: center; z-index: 1000; }
     </style>
 </head>
 <body>
 
-    <div class="login-container" id="loginScreen">
-        <h1 style="margin-bottom: 10px;">Coffee Admin</h1>
-        <p style="color: #6b7280; margin-bottom: 20px;">Login to manage the cloud menu.</p>
-        <div id="loginError" class="error-message">Invalid email or password.</div>
-        <input type="email" id="email" placeholder="Email (admin@coffee.com)">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="handleLogin()" style="width: 100%; padding: 12px; background: #111827; color: white; border-radius: 8px; font-weight: 600;">Sign In</button>
+    <div id="loginScreen" class="login-screen">
+        <div class="login-card">
+            <h2 style="margin-bottom: 5px;">Cafe Manager</h2>
+            <p style="font-size: 14px; color: #666; margin-bottom: 20px;">Enter your admin credentials</p>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Password">
+            <button class="btn btn-main" onclick="handleLogin()">Sign In</button>
+        </div>
     </div>
 
-    <div class="admin-panel" id="adminPanel">
-        <div class="container">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                <h2>Menu Editor</h2>
-                <button onclick="handleLogout()" style="background: none; color: #ef4444; font-weight: 600;">Logout</button>
-            </div>
-            <button onclick="addCategory()" style="background: #111827; color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px;">+ New Category</button>
-            <div id="admin-container"></div>
+    <div id="adminPanel" class="admin-panel">
+        <div style="display:flex; justify-content: space-between; align-items:center;">
+            <h1>Menu Editor</h1>
+            <button onclick="handleLogout()" style="color:red; border:none; background:none; cursor:pointer;">Logout</button>
         </div>
-        <div class="bottom-bar">
-            <button class="btn-save" onclick="saveMenu()">Save All Changes to Cloud</button>
-        </div>
+        <button class="btn btn-main" style="margin-bottom:20px;" onclick="addCategory()">+ New Category</button>
+        <div id="editor-container"></div>
+    </div>
+
+    <div class="bottom-bar" id="saveBar" style="display:none;">
+        <button class="btn btn-save" onclick="saveMenu()">Save Changes to Cloud</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-        // --------------------------------------------------
-        // PASTE YOUR FIREBASE CONFIG BLOCK BELOW THIS LINE:
+        // --- PASTE YOUR FIREBASE CONFIG HERE ---
         const firebaseConfig = {
-          apiKey: "AIzaSyDrS3qQrsUX9uZ2feirxypuuZAOr8PNGtI",
-          authDomain: "cofee-shop-26e73.firebaseapp.com",
-          projectId: "cofee-shop-26e73",
-          storageBucket: "cofee-shop-26e73.firebasestorage.app",
-          messagingSenderId: "1078896374249",
-          appId: "1:1078896374249:web:e633362be7cca4a9479b78",
-          measurementId: "G-KLGNXCJXBG"
+              apiKey: "AIzaSyDrS3qQrsUX9uZ2feirxypuuZAOr8PNGtI",
+              authDomain: "cofee-shop-26e73.firebaseapp.com",
+              projectId: "cofee-shop-26e73",
+              storageBucket: "cofee-shop-26e73.firebasestorage.app",
+              messagingSenderId: "1078896374249",
+              appId: "1:1078896374249:web:e633362be7cca4a9479b78",
+              measurementId: "G-KLGNXCJXBG"
+
         };
-        
-        // --------------------------------------------------
+        // ---------------------------------------
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
-        let currentMenu = {};
+        let menuData = {};
 
-        // AUTH LOGIC
+        // LOGIN / LOGOUT
         window.handleLogin = async () => {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
             try {
-                await signInWithEmailAndPassword(auth, email, pass);
-            } catch (error) {
-                document.getElementById('loginError').style.display = 'block';
-            }
+                await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value);
+            } catch (e) { alert("Login failed!"); }
         };
-
         window.handleLogout = () => signOut(auth).then(() => location.reload());
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('adminPanel').classList.add('active');
-                document.body.style.alignItems = 'flex-start';
-                loadMenuFromCloud();
+                document.getElementById('saveBar').style.display = 'flex';
+                loadMenu();
             }
         });
 
-        // DATA LOGIC
-        async function loadMenuFromCloud() {
-            const docRef = doc(db, "settings", "menu");
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                currentMenu = docSnap.data().categories;
-            } else {
-                currentMenu = { "Coffee": [] };
-            }
-            displayAdmin();
+        async function loadMenu() {
+            const snap = await getDoc(doc(db, "settings", "menu"));
+            menuData = snap.exists() ? snap.data().categories : {};
+            renderEditor();
         }
 
-        window.saveMenu = async () => {
-            try {
-                await setDoc(doc(db, "settings", "menu"), { categories: currentMenu });
-                alert("Cloud Updated Successfully!");
-            } catch (e) {
-                alert("Error saving: " + e.message);
-            }
-        };
-
-        // Your UI Logic (Renaming, Adding, etc) remains similar but updates currentMenu object
-        window.displayAdmin = () => {
-            const container = document.getElementById('admin-container');
+        window.renderEditor = () => {
+            const container = document.getElementById('editor-container');
             container.innerHTML = '';
-            for (let category in currentMenu) {
+            for (let cat in menuData) {
                 let html = `<div class="category-card">
-                    <input type="text" value="${category}" onchange="renameCategory('${category}', this.value)" style="font-weight:700; font-size:18px;">
-                    <button onclick="deleteCategory('${category}')" style="color:red; margin-left:10px;">Delete Cat</button>`;
+                    <input type="text" value="${cat}" onchange="renameCat('${cat}', this.value)" style="font-weight:800; font-size:18px; border:none; background:none;">
+                    <button class="delete-btn" onclick="deleteCat('${cat}')">Delete Category</button>
+                    <div id="items-${cat}">`;
                 
-                currentMenu[category].forEach((item, i) => {
-                    html += `
-                        <div class="item-editor-block">
-                            <div class="item-preview-area"><img src="${item.image || ''}" class="admin-item-photo"></div>
-                            <div style="flex-grow:1">
-                                <input type="text" placeholder="Name" value="${item.name}" oninput="updateItem('${category}', ${i}, 'name', this.value)">
-                                <input type="text" placeholder="Price" value="${item.price}" oninput="updateItem('${category}', ${i}, 'price', this.value)">
-                                <input type="text" placeholder="Image URL" value="${item.image}" oninput="updateItem('${category}', ${i}, 'image', this.value); displayAdmin()">
-                                <textarea oninput="updateItem('${category}', ${i}, 'description', this.value)">${item.description}</textarea>
-                                <button onclick="deleteItem('${category}', ${i})" style="color:red">Remove Item</button>
-                            </div>
-                        </div>`;
+                menuData[cat].forEach((item, i) => {
+                    html += `<div class="item-row">
+                        <div style="text-align:center;">
+                            <img src="${item.image || ''}" class="img-preview" id="img-${cat}-${i}">
+                            <input type="file" class="file-input" onchange="uploadImg(event, '${cat}', ${i})">
+                        </div>
+                        <div style="flex-grow:1;">
+                            <input type="text" placeholder="Name" value="${item.name}" oninput="editItem('${cat}', ${i}, 'name', this.value)">
+                            <input type="number" placeholder="Price (e.g. 5.500)" value="${item.price}" oninput="editItem('${cat}', ${i}, 'price', this.value)">
+                            <textarea placeholder="Description" oninput="editItem('${cat}', ${i}, 'description', this.value)">${item.description}</textarea>
+                            <button class="delete-btn" onclick="deleteItem('${cat}', ${i})">Remove Item</button>
+                        </div>
+                    </div>`;
                 });
-                html += `<button onclick="addItem('${category}')" style="width:100%; padding:10px; border:1px dashed #ccc;">+ Add Item</button></div>`;
+                html += `</div><button class="btn btn-main" onclick="addItem('${cat}')" style="background:#eee; color:#333;">+ Add Item</button></div>`;
                 container.innerHTML += html;
             }
         };
 
-        window.updateItem = (cat, i, field, val) => { currentMenu[cat][i][field] = val; };
-        window.addItem = (cat) => { currentMenu[cat].push({name:'', price:'', image:'', description:''}); displayAdmin(); };
-        window.addCategory = () => { const n = prompt("Category Name:"); if(n) { currentMenu[n] = []; displayAdmin(); } };
-        window.renameCategory = (oldN, newN) => { if(newN && newN !== oldN) { currentMenu[newN] = currentMenu[oldN]; delete currentMenu[oldN]; displayAdmin(); }};
-        window.deleteItem = (cat, i) => { currentMenu[cat].splice(i,1); displayAdmin(); };
-        window.deleteCategory = (cat) => { if(confirm("Delete category?")) { delete currentMenu[cat]; displayAdmin(); }};
+        window.uploadImg = async (e, cat, i) => {
+            const file = e.target.files[0];
+            const refImg = ref(storage, `menu/${Date.now()}_${file.name}`);
+            await uploadBytes(refImg, file);
+            const url = await getDownloadURL(refImg);
+            menuData[cat][i].image = url;
+            renderEditor();
+        };
+
+        window.editItem = (cat, i, field, val) => { menuData[cat][i][field] = val; };
+        window.addItem = (cat) => { menuData[cat].push({name:'', price:'', image:'', description:''}); renderEditor(); };
+        window.addCategory = () => { const n = prompt("Category Name:"); if(n) { menuData[n] = []; renderEditor(); } };
+        window.deleteItem = (cat, i) => { menuData[cat].splice(i,1); renderEditor(); };
+        window.deleteCat = (cat) => { if(confirm("Delete entire category?")) { delete menuData[cat]; renderEditor(); } };
+        window.renameCat = (oldN, newN) => { if(newN) { menuData[newN] = menuData[oldN]; delete menuData[oldN]; renderEditor(); } };
+
+        window.saveMenu = async () => {
+            await setDoc(doc(db, "settings", "menu"), { categories: menuData });
+            alert("Updated Successfully!");
+        };
     </script>
 </body>
 </html>
