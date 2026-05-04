@@ -20,7 +20,7 @@
             color: var(--text-main);
             line-height: 1.5;
         }
-        .loading-screen {
+        #loader {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -36,11 +36,11 @@
             border-bottom-right-radius: 24px;
         }
         .logo {
-            width: 90px;
-            height: 90px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             object-fit: cover;
-            border: 4px solid white;
+            border: 3px solid white;
             margin-bottom: 15px;
             background: #eee;
         }
@@ -49,73 +49,65 @@
             margin: -20px auto 50px;
             padding: 0 15px;
         }
-        .category-section {
-            margin-bottom: 30px;
-        }
         .category-name {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             font-weight: 800;
-            margin: 20px 0 15px;
-            padding-left: 5px;
+            margin: 30px 0 15px;
             color: var(--text-main);
             text-transform: uppercase;
             letter-spacing: 1px;
+            border-left: 4px solid var(--accent);
+            padding-left: 10px;
         }
         .item-card {
             background: var(--card);
-            border-radius: 16px;
-            padding: 16px;
+            border-radius: 12px;
+            padding: 12px;
             margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 16px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            gap: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         .item-img {
-            width: 80px;
-            height: 80px;
-            border-radius: 12px;
+            width: 70px;
+            height: 70px;
+            border-radius: 8px;
             object-fit: cover;
             background: #f3f4f6;
         }
         .item-info {
             flex: 1;
         }
-        .item-header {
+        .item-row {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 4px;
         }
         .item-name {
             font-weight: 700;
-            font-size: 1.05rem;
+            font-size: 1rem;
         }
         .item-price {
             font-weight: 800;
             color: var(--accent);
-            white-space: nowrap;
-        }
-        .item-desc {
-            font-size: 0.9rem;
-            color: var(--text-muted);
         }
         .hidden { display: none; }
-        .error-msg { text-align: center; margin-top: 50px; color: #ef4444; }
+        .error-msg { text-align: center; margin-top: 50px; color: #ef4444; padding: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="loader" class="loading-screen">Preparing Menu...</div>
+    <div id="loader">Loading your menu...</div>
 
     <div id="main-content" class="hidden">
         <div class="header">
-            <div id="logo-container"></div>
-            <h1 id="res-title" style="margin: 0; font-size: 1.8rem;"></h1>
+            <div id="logo-box"></div>
+            <h1 id="res-title" style="margin: 0; font-size: 1.6rem;"></h1>
         </div>
 
-        <div class="container" id="menu-container">
-            <!-- Categories and Items will appear here -->
+        <div class="container" id="menu-list">
+            <!-- Data will be injected here -->
         </div>
     </div>
 
@@ -123,91 +115,79 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- PASTE YOUR FIREBASE CONFIG HERE ---
         const firebaseConfig = {
-              apiKey: "AIzaSyDrS3qQrsUX9uZ2feirxypuuZAOr8PNGtI",
-              authDomain: "cofee-shop-26e73.firebaseapp.com",
-              projectId: "cofee-shop-26e73",
-              storageBucket: "cofee-shop-26e73.firebasestorage.app",
-              messagingSenderId: "1078896374249",
-              appId: "1:1078896374249:web:e633362be7cca4a9479b78",
-              measurementId: "G-KLGNXCJXBG"
-            };
+            apiKey: "AIzaSyDrS3qQrsUX9uZ2feirxypuuZAOr8PNGtI",
+            authDomain: "cofee-shop-26e73.firebaseapp.com",
+            projectId: "cofee-shop-26e73",
+            storageBucket: "cofee-shop-26e73.firebasestorage.app",
+            messagingSenderId: "1078896374249",
+            appId: "1:1078896374249:web:e633362be7cca4a9479b78",
+            measurementId: "G-KLGNXCJXBG"
+        };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        async function fetchMenu() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const restaurantId = urlParams.get('id');
+        async function loadData() {
+            const params = new URLSearchParams(window.location.search);
+            const menuId = params.get('id');
 
-            if (!restaurantId) {
-                showError("Please provide a valid Restaurant ID in the URL.");
+            if (!menuId) {
+                document.getElementById('loader').innerHTML = "<div class='error-msg'>No Menu ID found. Please scan a valid QR code.</div>";
                 return;
             }
 
             try {
-                const docRef = doc(db, "restaurants", restaurantId);
+                const docRef = doc(db, "restaurants", menuId);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    renderMenu(docSnap.data());
+                    const data = docSnap.data();
+                    displayMenu(data);
                 } else {
-                    showError("Menu not found. Please check the ID.");
+                    document.getElementById('loader').innerHTML = "<div class='error-msg'>Menu not found. This restaurant may have moved their menu.</div>";
                 }
-            } catch (error) {
-                console.error(error);
-                showError("Error loading menu. Check your internet connection.");
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loader').innerHTML = "<div class='error-msg'>Connection Error. Please refresh.</div>";
             }
         }
 
-        function renderMenu(data) {
+        function displayMenu(data) {
             document.getElementById('loader').classList.add('hidden');
             document.getElementById('main-content').classList.remove('hidden');
 
-            // Set Title and Logo
-            document.getElementById('res-title').innerText = data.name || "Our Menu";
+            document.getElementById('res-title').innerText = data.name || "Menu";
+            
             if (data.logo) {
-                document.getElementById('logo-container').innerHTML = `<img src="${data.logo}" class="logo" onerror="this.style.display='none'">`;
+                document.getElementById('logo-box').innerHTML = `<img src="${data.logo}" class="logo" onerror="this.style.display='none'">`;
             }
 
-            const menuBox = document.getElementById('menu-container');
+            const list = document.getElementById('menu-list');
             
-            // Loop through Categories
             if (data.categories && data.categories.length > 0) {
                 data.categories.forEach(cat => {
-                    let catHTML = `<div class="category-section">
-                        <div class="category-name">${cat.name}</div>`;
+                    let catHTML = `<div class="category-name">${cat.name}</div>`;
                     
-                    // Loop through Items in Category
                     cat.items.forEach(item => {
                         catHTML += `
                             <div class="item-card">
                                 ${item.img ? `<img src="${item.img}" class="item-img" onerror="this.style.display='none'">` : ''}
                                 <div class="item-info">
-                                    <div class="item-header">
+                                    <div class="item-row">
                                         <span class="item-name">${item.name}</span>
                                         <span class="item-price">${item.price}</span>
                                     </div>
-                                    <div class="item-desc">${item.desc || ''}</div>
                                 </div>
                             </div>
                         `;
                     });
-
-                    catHTML += `</div>`;
-                    menuBox.innerHTML += catHTML;
+                    list.innerHTML += catHTML;
                 });
-            } else {
-                menuBox.innerHTML = "<p style='text-align:center;'>No items available yet.</p>";
             }
         }
 
-        function showError(msg) {
-            document.getElementById('loader').innerHTML = `<div class="error-msg">${msg}</div>`;
-        }
-
-        fetchMenu();
+        loadData();
     </script>
 </body>
 </html>
