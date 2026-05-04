@@ -3,59 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Cloud Menu Editor</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>Menu Admin - SaaS Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #D4AF37; --espresso: #2C1B18; --cream: #F9F5F2; }
-        body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--espresso); margin: 0; padding-bottom: 100px; }
-        .login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--espresso); }
-        .login-card { background: white; padding: 40px; border-radius: 20px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .admin-panel { display: none; padding: 20px; max-width: 800px; margin: 0 auto; }
-        .active { display: block; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
-        .category-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 30px; border-left: 6px solid var(--gold); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .item-row { display: flex; gap: 15px; background: #fff; padding: 15px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 10px; }
-        .img-preview { width: 80px; height: 80px; background: #eee; border-radius: 8px; object-fit: cover; }
-        .btn { cursor: pointer; border: none; border-radius: 8px; font-weight: 700; transition: 0.3s; padding: 12px; }
-        .btn-main { background: var(--espresso); color: white; width: 100%; }
-        .btn-save { background: #10b981; color: white; padding: 20px; font-size: 18px; width: 100%; max-width: 800px; }
-        .delete-btn { color: #ef4444; background: none; font-size: 12px; cursor: pointer; border: none; margin-top: 5px; }
-        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; border-top: 2px solid var(--gold); display: flex; justify-content: center; z-index: 1000; }
+        :root { --primary: #111827; --accent: #10b981; }
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .hidden { display: none; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; }
+        button { cursor: pointer; border: none; border-radius: 8px; font-weight: 600; transition: 0.2s; }
+        .btn-main { background: var(--primary); color: white; padding: 12px 24px; width: 100%; }
+        .btn-save { background: var(--accent); color: white; padding: 16px; position: fixed; bottom: 20px; right: 20px; z-index: 100; }
+        .item-row { display: flex; gap: 15px; background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 10px; align-items: center; }
+        .preview-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: #eee; }
+        .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="loginScreen" class="login-screen">
-        <div class="login-card">
-            <h2 style="margin-bottom: 5px;">Cafe Admin</h2>
-            <p style="font-size: 14px; color: #666; margin-bottom: 20px;">Secure Cloud Access</p>
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="password" placeholder="Password">
-            <button class="btn btn-main" onclick="handleLogin()">Sign In</button>
+<div class="container">
+    <!-- Auth Section -->
+    <div id="auth-section" class="card">
+        <h2>Partner Login / Sign Up</h2>
+        <p>Create an account to start your digital menu.</p>
+        <input type="email" id="email" placeholder="Email Address">
+        <input type="password" id="password" placeholder="Password">
+        <button class="btn-main" onclick="handleAuth()">Login or Register</button>
+    </div>
+
+    <!-- Main Admin Panel -->
+    <div id="admin-panel" class="hidden">
+        <div class="nav">
+            <h2 id="welcome-msg">Dashboard</h2>
+            <button onclick="logout()" style="color: #ef4444; background: none;">Logout</button>
         </div>
-    </div>
 
-    <div id="adminPanel" class="admin-panel">
-        <div style="display:flex; justify-content: space-between; align-items:center;">
-            <h1>Menu Editor</h1>
-            <button onclick="handleLogout()" style="color:red; background:none; border:none; cursor:pointer;">Logout</button>
+        <div class="card">
+            <h3>Shop Branding</h3>
+            <label>Restaurant Name</label>
+            <input type="text" id="res-name" placeholder="e.g. Blue Bottle Coffee">
+            <label>Logo Upload</label>
+            <input type="file" id="res-logo-file" accept="image/*">
+            <div id="logo-preview-container"></div>
         </div>
-        <button class="btn btn-main" style="margin-bottom:20px; width:auto;" onclick="addCategory()">+ New Category</button>
-        <div id="editor-container"></div>
+
+        <div id="menu-builder"></div>
+        <button class="btn-main" style="background: #374151; margin-top: 10px;" onclick="addCategory()">+ Add New Category</button>
     </div>
+</div>
 
-    <div class="bottom-bar" id="saveBar" style="display:none;">
-        <button class="btn btn-save" onclick="saveMenu()">Save Changes to Cloud</button>
-    </div>
+<button id="save-btn" class="btn-save hidden" onclick="saveAll()">Save & Publish Menu</button>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-        // --- PASTE YOUR FIREBASE CONFIG BELOW ---
-        
-        const firebaseConfig = {
+    // --- PASTE YOUR FIREBASE CONFIG HERE ---
+    const firebaseConfig = {
   apiKey: "AIzaSyDrS3qQrsUX9uZ2feirxypuuZAOr8PNGtI",
   authDomain: "cofee-shop-26e73.firebaseapp.com",
   projectId: "cofee-shop-26e73",
@@ -64,78 +71,123 @@
   appId: "1:1078896374249:web:e633362be7cca4a9479b78",
   measurementId: "G-KLGNXCJXBG"
 };
-        // ---------------------------------------
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
 
-        let menuData = {};
+    let currentUID = null;
+    let menuData = { categories: [] };
 
-        window.handleLogin = async () => {
-            try {
-                await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value);
-            } catch (e) { alert("Error: " + e.message); }
-        };
-
-        window.handleLogout = () => signOut(auth).then(() => location.reload());
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('adminPanel').classList.add('active');
-                document.getElementById('saveBar').style.display = 'flex';
-                loadMenu();
-            }
-        });
-
-        async function loadMenu() {
-            const snap = await getDoc(doc(db, "settings", "menu"));
-            menuData = snap.exists() ? snap.data().categories : { "Hot Drinks": [] };
-            renderEditor();
+    // AUTH LOGIC
+    window.handleAuth = async () => {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('password').value;
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+        } catch (err) {
+            if (err.code === 'auth/user-not-found') {
+                await createUserWithEmailAndPassword(auth, email, pass);
+            } else { alert(err.message); }
         }
+    };
 
-        window.renderEditor = () => {
-            const container = document.getElementById('editor-container');
-            container.innerHTML = '';
-            for (let cat in menuData) {
-                let html = `<div class="category-card">
-                    <input type="text" value="${cat}" onchange="renameCat('${cat}', this.value)" style="font-weight:800; font-size:20px; border:none; border-bottom:1px solid #eee;">
-                    <div id="items-${cat}">`;
-                
-                menuData[cat].forEach((item, i) => {
-                    html += `<div class="item-row">
-                        <img src="${item.image || 'https://via.placeholder.com/80'}" class="img-preview">
-                        <div style="flex-grow:1;">
-                            <input type="text" placeholder="Item Name" value="${item.name}" oninput="editItem('${cat}', ${i}, 'name', this.value)">
-                            <input type="number" placeholder="Price (Ex: 5.500)" value="${item.price}" oninput="editItem('${cat}', ${i}, 'price', this.value)">
-                            <input type="text" placeholder="Image URL" value="${item.image}" oninput="editItem('${cat}', ${i}, 'image', this.value); renderEditor();">
-                            <textarea placeholder="Description..." oninput="editItem('${cat}', ${i}, 'description', this.value)">${item.description}</textarea>
-                            <button class="delete-btn" onclick="deleteItem('${cat}', ${i})">× Remove Item</button>
-                        </div>
-                    </div>`;
-                });
-                html += `</div>
-                    <button class="btn" style="background:#eee; width:100%; margin-top:10px;" onclick="addItem('${cat}')">+ Add Item</button>
-                    <button class="delete-btn" style="width:100%; margin-top:15px;" onclick="deleteCat('${cat}')">Delete Category</button>
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUID = user.uid;
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('admin-panel').classList.remove('hidden');
+            document.getElementById('save-btn').classList.remove('hidden');
+            loadExistingData();
+        } else {
+            location.reload();
+        }
+    });
+
+    window.logout = () => signOut(auth);
+
+    // IMAGE UPLOAD LOGIC
+    async function uploadFile(file, path) {
+        if (!file) return null;
+        const storageRef = ref(storage, `restaurants/${currentUID}/${path}_${Date.now()}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        return await getDownloadURL(snapshot.ref);
+    }
+
+    async function loadExistingData() {
+        const docRef = doc(db, "restaurants", currentUID);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            document.getElementById('res-name').value = data.name || "";
+            menuData.categories = data.categories || [];
+            renderMenuEditor();
+        }
+    }
+
+    window.addCategory = () => {
+        menuData.categories.push({ name: "New Category", items: [] });
+        renderMenuEditor();
+    };
+
+    window.addItem = (catIdx) => {
+        menuData.categories[catIdx].items.push({ name: "", price: "", desc: "", img: "" });
+        renderMenuEditor();
+    };
+
+    function renderMenuEditor() {
+        const container = document.getElementById('menu-builder');
+        container.innerHTML = '';
+        menuData.categories.forEach((cat, cIdx) => {
+            let html = `<div class="card">
+                <input type="text" value="${cat.name}" onchange="updateCatName(${cIdx}, this.value)" style="font-weight:bold; font-size:1.2rem">
+                <div id="items-${cIdx}">`;
+            
+            cat.items.forEach((item, iIdx) => {
+                html += `<div class="item-row">
+                    <img src="${item.img || 'https://via.placeholder.com/60'}" class="preview-img">
+                    <div style="flex:1">
+                        <input type="text" placeholder="Item Name" value="${item.name}" onchange="updateItem(${cIdx}, ${iIdx}, 'name', this.value)">
+                        <input type="text" placeholder="Price" value="${item.price}" onchange="updateItem(${cIdx}, ${iIdx}, 'price', this.value)">
+                        <input type="file" accept="image/*" onchange="uploadItemImg(${cIdx}, ${iIdx}, this)">
+                    </div>
                 </div>`;
-                container.innerHTML += html;
-            }
-        };
+            });
+            
+            html += `</div><button onclick="addItem(${cIdx})">+ Add Item</button></div>`;
+            container.innerHTML += html;
+        });
+    }
 
-        window.editItem = (cat, i, field, val) => { menuData[cat][i][field] = val; };
-        window.addItem = (cat) => { menuData[cat].push({name:'', price:'', image:'', description:''}); renderEditor(); };
-        window.addCategory = () => { const n = prompt("New Category Name:"); if(n) { menuData[n] = []; renderEditor(); } };
-        window.deleteItem = (cat, i) => { menuData[cat].splice(i,1); renderEditor(); };
-        window.deleteCat = (cat) => { if(confirm("Delete category?")) { delete menuData[cat]; renderEditor(); } };
-        window.renameCat = (oldN, newN) => { if(newN && newN !== oldN) { menuData[newN] = menuData[oldN]; delete menuData[oldN]; renderEditor(); } };
+    window.updateCatName = (i, val) => menuData.categories[i].name = val;
+    window.updateItem = (c, i, field, val) => menuData.categories[c].items[i][field] = val;
+    
+    window.uploadItemImg = async (c, i, input) => {
+        const url = await uploadFile(input.files[0], `item_${c}_${i}`);
+        if(url) {
+            menuData.categories[c].items[i].img = url;
+            renderMenuEditor();
+        }
+    };
 
-        window.saveMenu = async () => {
-            try {
-                await setDoc(doc(db, "settings", "menu"), { categories: menuData });
-                alert("Cloud Updated Successfully!");
-            } catch (e) { alert("Save Error: " + e.message); }
+    window.saveAll = async () => {
+        const name = document.getElementById('res-name').value;
+        const logoFile = document.getElementById('res-logo-file').files[0];
+        let logoUrl = null;
+        
+        if (logoFile) logoUrl = await uploadFile(logoFile, 'logo');
+        
+        const payload = {
+            name: name,
+            categories: menuData.categories,
+            updatedAt: new Date()
         };
-    </script>
+        if (logoUrl) payload.logo = logoUrl;
+
+        await setDoc(doc(db, "restaurants", currentUID), payload, { merge: true });
+        alert("Published! Your Public ID is: " + currentUID);
+    };
+</script>
 </body>
 </html>
