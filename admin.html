@@ -3,74 +3,357 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>Admin Dashboard | Menu.OS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #111827; --accent: #10b981; --bg: #f9fafb; --danger: #ef4444; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; color: var(--primary); }
+        :root {
+            --primary: #111827;
+            --accent: #10b981;
+            --bg: #f9fafb;
+            --danger: #ef4444;
+            --warn: #f59e0b;
+            --success: #10b981;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            color: var(--primary);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Modals ── */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 3000; }
+        .modal.open { display: flex; }
         .modal-content { background: white; padding: 30px; border-radius: 24px; text-align: center; max-width: 400px; width: 90%; }
-        .auth-overlay { position: fixed; inset: 0; background: var(--primary); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-        .auth-card { background: white; padding: 40px; border-radius: 24px; width: 90%; max-width: 380px; text-align: center; }
-        .nav { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 100; }
-        .container { max-width: 700px; margin: 40px auto; padding: 0 20px 120px; }
-        .card { background: white; padding: 25px; border-radius: 20px; border: 1px solid #e5e7eb; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #d1d5db; border-radius: 12px; font-family: inherit; box-sizing: border-box; }
-        button { cursor: pointer; border: none; border-radius: 12px; font-weight: 600; padding: 12px 20px; transition: 0.2s; }
-        .btn-primary { background: var(--primary); color: white; width: 100%; }
-        .btn-accent { background: var(--accent); color: white; padding: 15px 40px; }
-        .btn-outline { background: #f3f4f6; color: var(--primary); width: 100%; margin-top: 10px; }
-        .item-box { background: #f9fafb; padding: 15px; border-radius: 15px; margin-top: 10px; border: 1px solid #eee; }
-        .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 20px; border-top: 1px solid #e5e7eb; text-align: center; }
+
+        /* ── Auth overlay ── */
+        .auth-overlay {
+            position: fixed; inset: 0;
+            background: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2000;
+        }
+        .auth-card {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            width: 90%; max-width: 400px;
+        }
+        .auth-logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: -1px;
+            margin-bottom: 6px;
+        }
+        .auth-subtitle {
+            font-size: 0.82rem;
+            color: #9ca3af;
+            margin-bottom: 28px;
+        }
+
+        /* ── Tab switcher ── */
+        .tab-row {
+            display: flex;
+            background: #f3f4f6;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 22px;
+            gap: 4px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 9px;
+            border: none;
+            border-radius: 9px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: transparent;
+            color: #6b7280;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
+
+        /* ── Inline alert ── */
+        .alert {
+            display: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+            text-align: left;
+        }
+        .alert.show { display: block; }
+        .alert-danger  { background: #fee2e2; color: #b91c1c; }
+        .alert-success { background: #d1fae5; color: #065f46; }
+        .alert-info    { background: #dbeafe; color: #1e40af; }
+
+        /* ── Email verification banner ── */
+        #verify-banner {
+            display: none;
+            background: #fffbeb;
+            border-bottom: 1px solid #fde68a;
+            padding: 12px 20px;
+            font-size: 0.84rem;
+            color: #92400e;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+        #verify-banner.show { display: block; }
+        #verify-banner button {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 5px 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-left: 10px;
+            font-family: inherit;
+        }
+        #verify-banner button:hover { background: #d97706; }
+
+        /* ── Nav ── */
+        .nav {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        /* ── Layout ── */
+        .container { max-width: 700px; margin: 40px auto; padding: 0 20px 140px; }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .card-header h3 { margin: 0; font-size: 1rem; }
+
+        /* ── Inputs ── */
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 6px 0;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+        input.error { border-color: var(--danger); }
+        textarea { resize: vertical; min-height: 60px; }
+
+        /* ── Buttons ── */
+        button { cursor: pointer; border: none; border-radius: 12px; font-weight: 600; font-family: inherit; padding: 12px 20px; transition: 0.2s; font-size: 0.9rem; }
+        .btn-primary  { background: var(--primary); color: white; width: 100%; margin-top: 4px; }
+        .btn-primary:hover  { background: #1f2937; }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-accent   { background: var(--accent); color: white; padding: 15px 40px; font-size: 1rem; }
+        .btn-accent:hover   { background: #059669; }
+        .btn-accent:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-outline  { background: #f3f4f6; color: var(--primary); width: 100%; margin-top: 10px; }
+        .btn-outline:hover  { background: #e5e7eb; }
+        .btn-danger   { background: #fee2e2; color: var(--danger); padding: 8px 14px; font-size: 0.8rem; }
+        .btn-danger:hover   { background: #fecaca; }
+        .btn-move     { background: #f3f4f6; color: #6b7280; padding: 6px 10px; font-size: 0.75rem; border-radius: 8px; }
+        .btn-move:hover     { background: #e5e7eb; }
+        .btn-link {
+            background: none; border: none; color: var(--accent);
+            font-size: 0.8rem; font-weight: 600; cursor: pointer;
+            padding: 0; text-decoration: underline; font-family: inherit;
+            display: block; margin-top: 12px; text-align: center; width: 100%;
+        }
+        .btn-link:hover { color: #059669; }
+
+        /* ── Item box ── */
+        .item-box {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 10px;
+            border: 1px solid #eee;
+            position: relative;
+        }
+        .item-box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .item-box-title  { font-size: 0.8rem; font-weight: 700; color: #9ca3af; letter-spacing: 0.5px; text-transform: uppercase; }
+        .item-actions    { display: flex; gap: 6px; align-items: center; }
+
+        /* ── Category controls ── */
+        .cat-controls { display: flex; gap: 6px; align-items: center; }
+
+        /* ── Validation hints ── */
+        .field-hint { font-size: 0.75rem; color: var(--danger); margin: 0 0 4px 2px; display: none; }
+        .field-hint.show { display: block; }
+
+        /* ── Image preview ── */
+        .img-preview { display: none; width: 56px; height: 56px; border-radius: 10px; object-fit: cover; border: 1px solid #e5e7eb; margin-top: 6px; }
+        .img-preview.show { display: block; }
+
+        /* ── Save bar ── */
+        .save-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: white;
+            padding: 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex; justify-content: center; align-items: center; gap: 12px;
+        }
+        .dirty-badge { font-size: 0.78rem; color: var(--warn); font-weight: 600; display: none; }
+        .dirty-badge.show { display: block; }
+
+        /* ── Helpers ── */
         .hidden { display: none !important; }
+        .label { font-size: 0.75rem; font-weight: 700; color: #6b7280; letter-spacing: 0.4px; text-transform: uppercase; margin: 10px 0 2px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner {
+            display: inline-block;
+            width: 14px; height: 14px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-left-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
     </style>
 </head>
 <body>
 
+<!-- ── Link modal ─────────────────────────────────────────────────────── -->
 <div id="link-modal" class="modal">
     <div class="modal-content">
-        <h3 style="margin-top:0">Success! 🚀</h3>
-        <input type="text" id="live-link-input" readonly style="background: #f3f4f6; text-align: center; margin: 20px 0;">
+        <h3 style="margin-top:0">Published! 🚀</h3>
+        <p style="color:#6b7280;font-size:0.9rem;margin-top:0">Share this link with your customers:</p>
+        <input type="text" id="live-link-input" readonly style="background:#f3f4f6;text-align:center;margin:10px 0 16px;">
         <button class="btn-primary" id="copy-btn">Copy Link</button>
-        <button class="btn-outline" onclick="document.getElementById('link-modal').style.display='none'">Close</button>
+        <button class="btn-outline" id="close-modal-btn">Close</button>
     </div>
 </div>
 
+<!-- ── Auth screen ─────────────────────────────────────────────────────── -->
 <div id="auth-screen" class="auth-overlay">
     <div class="auth-card">
-        <h2>Partner Portal</h2>
-        <input type="email" id="email" placeholder="Email">
-        <input type="password" id="password" placeholder="Password">
-        <button class="btn-primary" id="auth-btn">Sign In</button>
+        <div class="auth-logo">MENU.OS</div>
+        <div class="auth-subtitle">Restaurant Partner Portal</div>
+
+        <!-- Tab switcher -->
+        <div class="tab-row">
+            <button class="tab-btn active" id="tab-signin" onclick="switchTab('signin')">Sign In</button>
+            <button class="tab-btn"        id="tab-signup" onclick="switchTab('signup')">Create Account</button>
+        </div>
+
+        <!-- Shared alert -->
+        <div class="alert alert-danger" id="auth-error"></div>
+        <div class="alert alert-success" id="auth-success"></div>
+
+        <!-- Sign In panel -->
+        <div id="panel-signin">
+            <div class="label">Email</div>
+            <input type="email" id="signin-email" placeholder="you@restaurant.com" autocomplete="email">
+            <div class="label">Password</div>
+            <input type="password" id="signin-password" placeholder="••••••••" autocomplete="current-password">
+            <button class="btn-primary" id="signin-btn" style="margin-top:16px">Sign In</button>
+            <button class="btn-link" id="forgot-btn">Forgot password?</button>
+        </div>
+
+        <!-- Sign Up panel -->
+        <div id="panel-signup" class="hidden">
+            <div class="label">Restaurant Name</div>
+            <input type="text" id="signup-name" placeholder="e.g. Casa Verde" maxlength="80" autocomplete="organization">
+            <div class="label">Email</div>
+            <input type="email" id="signup-email" placeholder="you@restaurant.com" autocomplete="email">
+            <div class="label">Password <span style="color:#9ca3af;font-weight:400;text-transform:none">(min. 8 characters)</span></div>
+            <input type="password" id="signup-password" placeholder="Create a strong password" autocomplete="new-password">
+            <div class="label">Confirm Password</div>
+            <input type="password" id="signup-password2" placeholder="Repeat password" autocomplete="new-password">
+            <button class="btn-primary" id="signup-btn" style="margin-top:16px">Create Account</button>
+        </div>
     </div>
 </div>
 
+<!-- ── Verify banner ───────────────────────────────────────────────────── -->
+<div id="verify-banner">
+    ⚠️ Please verify your email address to enable publishing.
+    <button id="resend-verify-btn">Resend email</button>
+</div>
+
+<!-- ── Dashboard ──────────────────────────────────────────────────────── -->
 <div id="dashboard" class="hidden">
     <nav class="nav">
-        <span style="font-weight:800; color:var(--accent)">MENU.OS</span>
-        <button style="background:#fee2e2; color:var(--danger)" id="logout-btn">Sign Out</button>
+        <span style="font-weight:800;color:var(--accent)">MENU.OS</span>
+        <button style="background:#fee2e2;color:var(--danger)" id="logout-btn">Sign Out</button>
     </nav>
 
     <div class="container">
+        <!-- Branding card -->
         <div class="card">
             <h3>Store Branding</h3>
-            <input type="text" id="res-name" placeholder="Restaurant Name">
-            <input type="text" id="res-logo" placeholder="Logo Image URL">
+            <div class="label">Restaurant Name *</div>
+            <input type="text" id="res-name" placeholder="e.g. Casa Verde" maxlength="80">
+            <div class="field-hint" id="name-hint">Restaurant name is required</div>
+
+            <div class="label">Logo Image URL</div>
+            <input type="text" id="res-logo" placeholder="https://..." maxlength="500">
+            <div class="field-hint" id="logo-hint">Logo URL must start with https://</div>
+            <img id="logo-preview" class="img-preview" alt="Logo preview">
         </div>
+
         <div id="categories-container"></div>
-        <button class="btn-outline" onclick="addCategory()">+ Add Category</button>
+
+        <button class="btn-outline" onclick="addCategory()" style="margin-top:4px">+ Add Category</button>
     </div>
 
     <div class="save-bar">
+        <span class="dirty-badge" id="dirty-badge">● Unsaved changes</span>
         <button class="btn-accent" id="save-btn">Publish Changes</button>
     </div>
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import {
+        getAuth,
+        onAuthStateChanged,
+        signInWithEmailAndPassword,
+        createUserWithEmailAndPassword,
+        sendEmailVerification,
+        sendPasswordResetEmail,
+        signOut
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc }
+        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    /* ─── Firebase init ──────────────────────────────────────────────── */
     const firebaseConfig = {
         apiKey: "AIzaSyDrS3qQrsUX9uZ2feirxypuuZAOr8PNGtI",
         authDomain: "cofee-shop-26e73.firebaseapp.com",
@@ -80,99 +363,605 @@
         appId: "1:1078896374249:web:e633362be7cca4a9479b78"
     };
 
-    const app = initializeApp(firebaseConfig);
+    const app  = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
+    const db   = getFirestore(app);
 
-    let currentUID = null;
-    let menuData = { categories: [] };
+    let currentUID  = null;
+    let currentUser = null;
+    let menuData    = { categories: [] };
+    let isDirty     = false;
 
-    // Auth
-    document.getElementById('auth-btn').onclick = async () => {
-        const e = document.getElementById('email').value;
-        const p = document.getElementById('password').value;
-        try { await signInWithEmailAndPassword(auth, e, p); }
-        catch { try { await createUserWithEmailAndPassword(auth, e, p); } catch(err) { alert(err.message); } }
+    /* ─── Limits ─────────────────────────────────────────────────────── */
+    const MAX_CATEGORIES  = 20;
+    const MAX_ITEMS       = 50;   // per category
+    const MAX_NAME_LEN    = 80;
+    const MAX_DESC_LEN    = 300;
+    const MAX_PRICE_LEN   = 30;
+    const MAX_IMG_LEN     = 500;
+
+    /* ─── XSS helper ─────────────────────────────────────────────────── */
+    function esc(s) {
+        return String(s ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    /* Only allow https:// image URLs */
+    const safeImg = url => (typeof url === 'string' && url.startsWith('https://')) ? url : null;
+
+    /* ─── Friendly Firebase error messages ───────────────────────────── */
+    function friendlyAuthError(code) {
+        const map = {
+            'auth/invalid-email':            'That email address is not valid.',
+            'auth/user-not-found':           'No account found with that email.',
+            'auth/wrong-password':           'Incorrect password. Please try again.',
+            'auth/invalid-credential':       'Incorrect email or password.',
+            'auth/email-already-in-use':     'An account with this email already exists.',
+            'auth/weak-password':            'Password must be at least 8 characters.',
+            'auth/too-many-requests':        'Too many failed attempts. Please wait a moment and try again.',
+            'auth/network-request-failed':   'Network error. Check your connection and try again.',
+            'auth/user-disabled':            'This account has been disabled. Please contact support.',
+        };
+        return map[code] || 'Something went wrong. Please try again.';
+    }
+
+    /* ─── Alert helpers ──────────────────────────────────────────────── */
+    function showAuthError(msg) {
+        const el = document.getElementById('auth-error');
+        el.textContent = msg;
+        el.classList.add('show');
+        document.getElementById('auth-success').classList.remove('show');
+    }
+    function showAuthSuccess(msg) {
+        const el = document.getElementById('auth-success');
+        el.textContent = msg;
+        el.classList.add('show');
+        document.getElementById('auth-error').classList.remove('show');
+    }
+    function clearAuthAlerts() {
+        document.getElementById('auth-error').classList.remove('show');
+        document.getElementById('auth-success').classList.remove('show');
+    }
+
+    /* ─── Tab switcher ───────────────────────────────────────────────── */
+    window.switchTab = (tab) => {
+        clearAuthAlerts();
+        document.getElementById('panel-signin').classList.toggle('hidden', tab !== 'signin');
+        document.getElementById('panel-signup').classList.toggle('hidden', tab !== 'signup');
+        document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
+        document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
     };
-    document.getElementById('logout-btn').onclick = () => signOut(auth);
 
+    /* ─── Sign In ────────────────────────────────────────────────────── */
+    document.getElementById('signin-btn').onclick = async () => {
+        clearAuthAlerts();
+        const email = document.getElementById('signin-email').value.trim();
+        const pass  = document.getElementById('signin-password').value;
+
+        if (!email || !pass) {
+            showAuthError('Please enter your email and password.');
+            return;
+        }
+
+        const btn = document.getElementById('signin-btn');
+        btn.innerHTML = '<span class="spinner"></span>Signing in…';
+        btn.disabled  = true;
+
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+        } catch (err) {
+            showAuthError(friendlyAuthError(err.code));
+        } finally {
+            btn.innerHTML = 'Sign In';
+            btn.disabled  = false;
+        }
+    };
+
+    /* ─── Sign Up ────────────────────────────────────────────────────── */
+    document.getElementById('signup-btn').onclick = async () => {
+        clearAuthAlerts();
+        const name  = document.getElementById('signup-name').value.trim();
+        const email = document.getElementById('signup-email').value.trim();
+        const pass  = document.getElementById('signup-password').value;
+        const pass2 = document.getElementById('signup-password2').value;
+
+        if (!name)              { showAuthError('Please enter your restaurant name.'); return; }
+        if (!email)             { showAuthError('Please enter your email address.');   return; }
+        if (pass.length < 8)    { showAuthError('Password must be at least 8 characters.'); return; }
+        if (pass !== pass2)     { showAuthError('Passwords do not match.'); return; }
+
+        const btn = document.getElementById('signup-btn');
+        btn.innerHTML = '<span class="spinner"></span>Creating account…';
+        btn.disabled  = true;
+
+        try {
+            const cred = await createUserWithEmailAndPassword(auth, email, pass);
+
+            /* Save initial restaurant doc using UID as document ID */
+            await setDoc(doc(db, "restaurants", cred.user.uid), {
+                name:       name,
+                logo:       '',
+                categories: [],
+                createdAt:  new Date().toISOString(),
+                updatedAt:  new Date().toISOString()
+            });
+
+            /* Send verification email */
+            await sendEmailVerification(cred.user);
+
+            showAuthSuccess(`Account created! We sent a verification email to ${email}. Please verify before publishing.`);
+        } catch (err) {
+            showAuthError(friendlyAuthError(err.code));
+        } finally {
+            btn.innerHTML = 'Create Account';
+            btn.disabled  = false;
+        }
+    };
+
+    /* ─── Forgot password ────────────────────────────────────────────── */
+    document.getElementById('forgot-btn').onclick = async () => {
+        clearAuthAlerts();
+        const email = document.getElementById('signin-email').value.trim();
+        if (!email) {
+            showAuthError('Enter your email address above first.');
+            return;
+        }
+        try {
+            await sendPasswordResetEmail(auth, email);
+            showAuthSuccess('Password reset email sent! Check your inbox.');
+        } catch (err) {
+            showAuthError(friendlyAuthError(err.code));
+        }
+    };
+
+    /* ─── Auth state ─────────────────────────────────────────────────── */
     onAuthStateChanged(auth, user => {
         if (user) {
-            currentUID = user.uid;
+            currentUID  = user.uid;
+            currentUser = user;
+
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
+
+            /* Show verify banner if email not verified */
+            if (!user.emailVerified) {
+                document.getElementById('verify-banner').classList.add('show');
+            } else {
+                document.getElementById('verify-banner').classList.remove('show');
+            }
+
             loadMenu();
         } else {
             document.getElementById('auth-screen').classList.remove('hidden');
             document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('verify-banner').classList.remove('show');
+            currentUID  = null;
+            currentUser = null;
         }
     });
 
-    // Menu Logic
-    window.addCategory = () => { menuData.categories.push({ name: "", items: [] }); render(); };
-    window.addItem = (idx) => { menuData.categories[idx].items.push({ name: "", price: "", img: "" }); render(); };
-    
-    // This function captures what you type and updates the data object
-    window.updateData = (cIdx, iIdx, field, value) => {
-        if (iIdx === null) menuData.categories[cIdx].name = value;
-        else menuData.categories[cIdx].items[iIdx][field] = value;
+    /* ─── Resend verification ────────────────────────────────────────── */
+    document.getElementById('resend-verify-btn').onclick = async () => {
+        if (!currentUser) return;
+        const btn = document.getElementById('resend-verify-btn');
+        btn.textContent = 'Sending…';
+        btn.disabled    = true;
+        try {
+            await sendEmailVerification(currentUser);
+            btn.textContent = 'Sent ✓';
+        } catch {
+            btn.textContent = 'Try again';
+            btn.disabled = false;
+        }
     };
 
-    function render() {
-        const container = document.getElementById('categories-container');
-        container.innerHTML = '';
-        menuData.categories.forEach((cat, cIdx) => {
-            let html = `<div class="card">
-                <input type="text" placeholder="Category Name" value="${cat.name}" oninput="updateData(${cIdx}, null, 'name', this.value)" style="font-weight:700;">
-                <div id="items-${cIdx}">`;
-            cat.items.forEach((item, iIdx) => {
-                html += `<div class="item-box">
-                    <input type="text" placeholder="Item Name" value="${item.name}" oninput="updateData(${cIdx}, ${iIdx}, 'name', this.value)">
-                    <input type="text" placeholder="Price" value="${item.price}" oninput="updateData(${cIdx}, ${iIdx}, 'price', this.value)">
-                    <input type="text" placeholder="Image URL" value="${item.img}" oninput="updateData(${cIdx}, ${iIdx}, 'img', this.value)">
-                </div>`;
-            });
-            html += `</div><button class="btn-outline" onclick="addItem(${cIdx})">+ Add Item</button></div>`;
-            container.innerHTML += html;
-        });
+    /* ─── Sign out ───────────────────────────────────────────────────── */
+    document.getElementById('logout-btn').onclick = () => {
+        if (isDirty && !confirm('You have unsaved changes. Sign out anyway?')) return;
+        menuData = { categories: [] };
+        signOut(auth);
+    };
+
+    /* ─── Dirty tracking ─────────────────────────────────────────────── */
+    function markDirty() {
+        isDirty = true;
+        document.getElementById('dirty-badge').classList.add('show');
+    }
+    function markClean() {
+        isDirty = false;
+        document.getElementById('dirty-badge').classList.remove('show');
     }
 
+    window.addEventListener('beforeunload', e => {
+        if (isDirty) { e.preventDefault(); e.returnValue = ''; }
+    });
+
+    /* ─── Logo URL preview ───────────────────────────────────────────── */
+    document.getElementById('res-logo').addEventListener('input', function () {
+        const preview  = document.getElementById('logo-preview');
+        const logoHint = document.getElementById('logo-hint');
+        const url = this.value.trim();
+        if (url === '' || url.startsWith('https://')) {
+            logoHint.classList.remove('show');
+            if (url.startsWith('https://')) {
+                preview.src = url;
+                preview.classList.add('show');
+                preview.onerror = () => preview.classList.remove('show');
+            } else {
+                preview.classList.remove('show');
+            }
+        } else {
+            logoHint.classList.add('show');
+            preview.classList.remove('show');
+        }
+        markDirty();
+    });
+    document.getElementById('res-name').addEventListener('input', () => {
+        document.getElementById('name-hint').classList.remove('show');
+        markDirty();
+    });
+
+    /* ─── Data mutators ──────────────────────────────────────────────── */
+    window.addCategory = () => {
+        if (menuData.categories.length >= MAX_CATEGORIES) {
+            showToast(`Maximum ${MAX_CATEGORIES} categories allowed.`, 'warn');
+            return;
+        }
+        menuData.categories.push({ name: "", items: [] });
+        render();
+        markDirty();
+    };
+
+    window.addItem = (cIdx) => {
+        if (menuData.categories[cIdx].items.length >= MAX_ITEMS) {
+            showToast(`Maximum ${MAX_ITEMS} items per category.`, 'warn');
+            return;
+        }
+        menuData.categories[cIdx].items.push({ name: "", price: "", description: "", img: "" });
+        render();
+        markDirty();
+    };
+
+    window.deleteCategory = (cIdx) => {
+        if (!confirm('Delete this category and all its items?')) return;
+        menuData.categories.splice(cIdx, 1);
+        render();
+        markDirty();
+    };
+
+    window.deleteItem = (cIdx, iIdx) => {
+        menuData.categories[cIdx].items.splice(iIdx, 1);
+        render();
+        markDirty();
+    };
+
+    window.moveCategoryUp = (cIdx) => {
+        if (cIdx === 0) return;
+        [menuData.categories[cIdx - 1], menuData.categories[cIdx]] =
+        [menuData.categories[cIdx],     menuData.categories[cIdx - 1]];
+        render(); markDirty();
+    };
+
+    window.moveCategoryDown = (cIdx) => {
+        if (cIdx === menuData.categories.length - 1) return;
+        [menuData.categories[cIdx + 1], menuData.categories[cIdx]] =
+        [menuData.categories[cIdx],     menuData.categories[cIdx + 1]];
+        render(); markDirty();
+    };
+
+    window.moveItemUp = (cIdx, iIdx) => {
+        if (iIdx === 0) return;
+        const items = menuData.categories[cIdx].items;
+        [items[iIdx - 1], items[iIdx]] = [items[iIdx], items[iIdx - 1]];
+        render(); markDirty();
+    };
+
+    window.moveItemDown = (cIdx, iIdx) => {
+        const items = menuData.categories[cIdx].items;
+        if (iIdx === items.length - 1) return;
+        [items[iIdx + 1], items[iIdx]] = [items[iIdx], items[iIdx + 1]];
+        render(); markDirty();
+    };
+
+    window.updateData = (cIdx, iIdx, field, value) => {
+        /* Enforce field length limits */
+        const limits = { name: MAX_NAME_LEN, description: MAX_DESC_LEN, price: MAX_PRICE_LEN, img: MAX_IMG_LEN };
+        if (limits[field]) value = value.slice(0, limits[field]);
+
+        if (iIdx === null) menuData.categories[cIdx].name = value;
+        else menuData.categories[cIdx].items[iIdx][field] = value;
+        markDirty();
+    };
+
+    /* Debounced image preview */
+    const imgPreviewTimers = {};
+    window.previewItemImg = (cIdx, iIdx, url) => {
+        clearTimeout(imgPreviewTimers[`${cIdx}-${iIdx}`]);
+        imgPreviewTimers[`${cIdx}-${iIdx}`] = setTimeout(() => {
+            const preview = document.getElementById(`img-prev-${cIdx}-${iIdx}`);
+            const hint    = document.getElementById(`img-hint-${cIdx}-${iIdx}`);
+            if (!preview) return;
+            if (url === '' || url.startsWith('https://')) {
+                if (hint) hint.classList.remove('show');
+                if (url.startsWith('https://')) {
+                    preview.src = url;
+                    preview.classList.add('show');
+                    preview.onerror = () => preview.classList.remove('show');
+                } else {
+                    preview.classList.remove('show');
+                }
+            } else {
+                if (hint) hint.classList.add('show');
+                preview.classList.remove('show');
+            }
+        }, 400);
+    };
+
+    /* ─── Render ─────────────────────────────────────────────────────── */
+    function render() {
+        const container = document.getElementById('categories-container');
+
+        /* Build full HTML string first, then set once — avoids innerHTML+= DOM thrash */
+        let html = '';
+
+        menuData.categories.forEach((cat, cIdx) => {
+            const atFirst = cIdx === 0;
+            const atLast  = cIdx === menuData.categories.length - 1;
+
+            html += `
+            <div class="card">
+                <div class="card-header">
+                    <input type="text" placeholder="Category Name (e.g. Starters)"
+                        value="${esc(cat.name)}"
+                        maxlength="${MAX_NAME_LEN}"
+                        oninput="updateData(${cIdx}, null, 'name', this.value)"
+                        style="font-weight:700;margin:0;flex:1;margin-right:10px;">
+                    <div class="cat-controls">
+                        <button class="btn-move" onclick="moveCategoryUp(${cIdx})"   ${atFirst ? 'disabled style="opacity:.3"' : ''} title="Move up">↑</button>
+                        <button class="btn-move" onclick="moveCategoryDown(${cIdx})" ${atLast  ? 'disabled style="opacity:.3"' : ''} title="Move down">↓</button>
+                        <button class="btn-danger" onclick="deleteCategory(${cIdx})">Delete category</button>
+                    </div>
+                </div>
+                <div id="items-${cIdx}">`;
+
+            cat.items.forEach((item, iIdx) => {
+                const itemAtFirst = iIdx === 0;
+                const itemAtLast  = iIdx === cat.items.length - 1;
+
+                html += `
+                <div class="item-box">
+                    <div class="item-box-header">
+                        <span class="item-box-title">Item ${iIdx + 1}</span>
+                        <div class="item-actions">
+                            <button class="btn-move" onclick="moveItemUp(${cIdx},${iIdx})"   ${itemAtFirst ? 'disabled style="opacity:.3"' : ''} title="Move up">↑</button>
+                            <button class="btn-move" onclick="moveItemDown(${cIdx},${iIdx})" ${itemAtLast  ? 'disabled style="opacity:.3"' : ''} title="Move down">↓</button>
+                            <button class="btn-danger" onclick="deleteItem(${cIdx},${iIdx})">✕</button>
+                        </div>
+                    </div>
+                    <div class="label">Item Name *</div>
+                    <input type="text" placeholder="e.g. Grilled Salmon"
+                        value="${esc(item.name)}"
+                        maxlength="${MAX_NAME_LEN}"
+                        oninput="updateData(${cIdx},${iIdx},'name',this.value)">
+
+                    <div class="label">Description</div>
+                    <textarea placeholder="Short description, allergens, serving info…"
+                        maxlength="${MAX_DESC_LEN}"
+                        oninput="updateData(${cIdx},${iIdx},'description',this.value)">${esc(item.description || '')}</textarea>
+
+                    <div class="label">Price *</div>
+                    <input type="text" placeholder="e.g. 12.00 TND or $9.99"
+                        value="${esc(item.price)}"
+                        maxlength="${MAX_PRICE_LEN}"
+                        oninput="updateData(${cIdx},${iIdx},'price',this.value)">
+                    <div class="field-hint" id="price-hint-${cIdx}-${iIdx}">Price is required</div>
+
+                    <div class="label">Image URL</div>
+                    <input type="text" placeholder="https://..."
+                        value="${esc(item.img)}"
+                        maxlength="${MAX_IMG_LEN}"
+                        oninput="updateData(${cIdx},${iIdx},'img',this.value); previewItemImg(${cIdx},${iIdx},this.value)">
+                    <div class="field-hint" id="img-hint-${cIdx}-${iIdx}">Image URL must start with https://</div>
+                    <img id="img-prev-${cIdx}-${iIdx}"
+                         class="img-preview ${safeImg(item.img) ? 'show' : ''}"
+                         src="${safeImg(item.img) ? esc(item.img) : ''}" alt="Preview">
+                </div>`;
+            });
+
+            html += `</div>
+                <button class="btn-outline" onclick="addItem(${cIdx})" style="margin-top:14px">+ Add Item</button>
+            </div>`;
+        });
+
+        /* Single DOM write — no innerHTML+= thrash */
+        container.innerHTML = html;
+    }
+
+    /* ─── Validation ─────────────────────────────────────────────────── */
+    function validate() {
+        let valid = true;
+
+        /* Restaurant name required */
+        const nameVal  = document.getElementById('res-name').value.trim();
+        const nameHint = document.getElementById('name-hint');
+        if (!nameVal) {
+            nameHint.classList.add('show');
+            valid = false;
+        } else {
+            nameHint.classList.remove('show');
+        }
+
+        /* Logo URL: if provided must be https:// */
+        const logoVal  = document.getElementById('res-logo').value.trim();
+        const logoHint = document.getElementById('logo-hint');
+        if (logoVal && !logoVal.startsWith('https://')) {
+            logoHint.classList.add('show');
+            valid = false;
+        } else {
+            logoHint.classList.remove('show');
+        }
+
+        menuData.categories.forEach((cat, cIdx) => {
+            cat.items.forEach((item, iIdx) => {
+                const priceHint = document.getElementById(`price-hint-${cIdx}-${iIdx}`);
+                const imgHint   = document.getElementById(`img-hint-${cIdx}-${iIdx}`);
+
+                if (!item.price || !item.price.trim()) {
+                    if (priceHint) priceHint.classList.add('show');
+                    valid = false;
+                } else {
+                    if (priceHint) priceHint.classList.remove('show');
+                }
+
+                if (item.img && !item.img.startsWith('https://')) {
+                    if (imgHint) imgHint.classList.add('show');
+                    valid = false;
+                } else {
+                    if (imgHint) imgHint.classList.remove('show');
+                }
+            });
+        });
+
+        return valid;
+    }
+
+    /* ─── Save / publish ─────────────────────────────────────────────── */
     document.getElementById('save-btn').onclick = async () => {
+        /* Block publish if email not verified */
+        if (currentUser && !currentUser.emailVerified) {
+            /* Reload user to get latest verification status */
+            await currentUser.reload();
+            if (!currentUser.emailVerified) {
+                showToast('Please verify your email before publishing.', 'warn');
+                return;
+            }
+            /* Verified now — hide banner */
+            document.getElementById('verify-banner').classList.remove('show');
+        }
+
+        if (!validate()) {
+            showToast('Please fix the highlighted fields before publishing.', 'danger');
+            return;
+        }
+
         const btn = document.getElementById('save-btn');
-        btn.innerText = "Publishing...";
-        
+        btn.innerHTML = '<span class="spinner"></span>Publishing…';
+        btn.disabled  = true;
+
+        /* Sanitize payload — strip any item missing a name, cap strings */
+        const sanitizedCategories = menuData.categories.map(cat => ({
+            name:  String(cat.name  || '').slice(0, MAX_NAME_LEN),
+            items: (cat.items || [])
+                .filter(i => i.name && i.name.trim())
+                .map(i => ({
+                    name:        String(i.name        || '').slice(0, MAX_NAME_LEN),
+                    description: String(i.description || '').slice(0, MAX_DESC_LEN),
+                    price:       String(i.price       || '').slice(0, MAX_PRICE_LEN),
+                    img:         safeImg(i.img) ? String(i.img).slice(0, MAX_IMG_LEN) : ''
+                }))
+        }));
+
         const payload = {
-            name: document.getElementById('res-name').value,
-            logo: document.getElementById('res-logo').value,
-            categories: menuData.categories
+            name:       document.getElementById('res-name').value.trim().slice(0, MAX_NAME_LEN),
+            logo:       safeImg(document.getElementById('res-logo').value.trim()) || '',
+            categories: sanitizedCategories,
+            updatedAt:  new Date().toISOString()
         };
 
         try {
             await setDoc(doc(db, "restaurants", currentUID), payload);
-            const liveLink = window.location.href.replace('admin.html', 'menu.html') + "?id=" + currentUID;
+
+            /* Build live link — use a stable base rather than parsing location.href */
+            const base     = window.location.href.replace(/\/[^/]*$/, '');
+            const liveLink = `${base}/menu.html?id=${currentUID}`;
+
             document.getElementById('live-link-input').value = liveLink;
-            document.getElementById('link-modal').style.display = 'flex';
-        } catch (err) { alert(err.message); }
-        finally { btn.innerText = "Publish Changes"; }
-    };
-
-    document.getElementById('copy-btn').onclick = () => {
-        const el = document.getElementById('live-link-input');
-        el.select();
-        document.execCommand('copy');
-        document.getElementById('copy-btn').innerText = "Copied!";
-        setTimeout(() => { document.getElementById('copy-btn').innerText = "Copy Link"; }, 2000);
-    };
-
-    async function loadMenu() {
-        const snap = await getDoc(doc(db, "restaurants", currentUID));
-        if (snap.exists()) {
-            const d = snap.data();
-            document.getElementById('res-name').value = d.name || "";
-            document.getElementById('res-logo').value = d.logo || "";
-            menuData.categories = d.categories || [];
-            render();
+            document.getElementById('link-modal').classList.add('open');
+            markClean();
+        } catch (err) {
+            showToast('Could not save: ' + err.message, 'danger');
+        } finally {
+            btn.innerHTML = 'Publish Changes';
+            btn.disabled  = false;
         }
+    };
+
+    /* ─── Modal controls ─────────────────────────────────────────────── */
+    document.getElementById('close-modal-btn').onclick = () =>
+        document.getElementById('link-modal').classList.remove('open');
+
+    document.getElementById('link-modal').addEventListener('click', function (e) {
+        if (e.target === this) this.classList.remove('open');
+    });
+
+    document.getElementById('copy-btn').onclick = async () => {
+        const text = document.getElementById('live-link-input').value;
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch {
+            const el = document.getElementById('live-link-input');
+            el.select();
+            document.execCommand('copy');
+        }
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = 'Copied! ✓';
+        setTimeout(() => { btn.textContent = 'Copy Link'; }, 2000);
+    };
+
+    /* ─── Load existing menu ─────────────────────────────────────────── */
+    async function loadMenu() {
+        try {
+            const snap = await getDoc(doc(db, "restaurants", currentUID));
+            if (snap.exists()) {
+                const d = snap.data();
+                document.getElementById('res-name').value = d.name || "";
+                document.getElementById('res-logo').value = d.logo || "";
+
+                if (safeImg(d.logo)) {
+                    const preview = document.getElementById('logo-preview');
+                    preview.src = d.logo;
+                    preview.classList.add('show');
+                }
+
+                menuData.categories = d.categories || [];
+                render();
+                markClean();
+            }
+        } catch (err) {
+            showToast('Could not load your menu: ' + err.message, 'danger');
+        }
+    }
+
+    /* ─── Toast notification (replaces alert()) ──────────────────────── */
+    let toastTimer;
+    function showToast(msg, type = 'danger') {
+        let toast = document.getElementById('toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'toast';
+            toast.style.cssText = `
+                position:fixed; bottom:90px; left:50%; transform:translateX(-50%);
+                padding:12px 20px; border-radius:12px; font-size:0.85rem;
+                font-weight:600; font-family:'Plus Jakarta Sans',sans-serif;
+                z-index:9999; max-width:340px; text-align:center;
+                box-shadow:0 4px 16px rgba(0,0,0,0.15);
+                transition:opacity 0.3s; pointer-events:none;
+            `;
+            document.body.appendChild(toast);
+        }
+        const styles = {
+            danger:  'background:#fee2e2;color:#b91c1c;',
+            warn:    'background:#fffbeb;color:#92400e;',
+            success: 'background:#d1fae5;color:#065f46;',
+        };
+        toast.style.cssText += styles[type] || styles.danger;
+        toast.textContent = msg;
+        toast.style.opacity = '1';
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 3500);
     }
 </script>
 </body>
