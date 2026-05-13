@@ -4,137 +4,183 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Menu | Luxury Edition</title>
+    <!-- OG / share tags — populated dynamically after data loads -->
+    <meta property="og:type" content="website">
+    <meta id="og-title"       property="og:title"       content="Digital Menu">
+    <meta id="og-description" property="og:description" content="View our digital menu">
+    <meta id="og-image"       property="og:image"       content="">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --accent: #10b981; 
-            --bg: #ffffff; 
-            --hero-bg: #0f172a; 
+        :root {
+            --accent: #10b981;
+            --bg: #ffffff;
+            --hero-bg: #0f172a;
             --card-bg: #ffffff;
             --text-main: #1e293b;
-            /* New Premium Gradient for Borders */
             --premium-border: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 50%, #e2e8f0 100%);
         }
-        
-        body, html { 
-            margin: 0; 
-            padding: 0; 
-            background: var(--bg); 
-            color: var(--text-main); 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
             -webkit-font-smoothing: antialiased;
         }
 
-        #loader { 
-            position: fixed; 
-            inset: 0; 
-            background: white; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            z-index: 9999; 
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
             transition: opacity 0.4s ease;
         }
 
-        .hero { 
-            background: var(--hero-bg); 
-            padding: 70px 20px 55px; 
-            text-align: center; 
-            color: white; 
-            border-bottom-left-radius: 45px; 
+        /* ── Error state shown inside loader ── */
+        #loader-error {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        #loader-error .err-icon { font-size: 2.5rem; margin-bottom: 12px; }
+        #loader-error h3 { margin: 0 0 6px; font-size: 1.1rem; color: var(--text-main); }
+        #loader-error p  { margin: 0; font-size: 0.9rem; color: #64748b; }
+
+        .hero {
+            background: var(--hero-bg);
+            padding: 70px 20px 55px;
+            text-align: center;
+            color: white;
+            border-bottom-left-radius: 45px;
             border-bottom-right-radius: 45px;
             box-shadow: 0 15px 35px rgba(15, 23, 42, 0.12);
         }
 
-        .logo { 
-            width: 90px; 
-            height: 90px; 
-            border-radius: 50%; 
-            border: 3px solid var(--accent); 
-            object-fit: cover; 
-            background: white; 
+        .logo {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            object-fit: cover;
+            background: white;
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
-        
+
         .container { max-width: 600px; margin: 0 auto; padding: 20px 20px 100px; }
-        
+
         .cat-section { margin-top: 50px; }
-        .cat-title { 
-            font-size: 1.1rem; 
-            font-weight: 800; 
-            color: var(--text-main); 
-            margin-bottom: 25px; 
+        .cat-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 25px;
             letter-spacing: 1.5px;
             display: flex;
             align-items: center;
             gap: 12px;
         }
-        /* Custom Premium Divider */
-        .cat-title::after { 
-            content: ''; 
-            flex: 1; 
-            height: 3px; 
-            background: linear-gradient(90deg, #f1f5f9, transparent); 
+        .cat-title::after {
+            content: '';
+            flex: 1;
+            height: 3px;
+            background: linear-gradient(90deg, #f1f5f9, transparent);
             border-radius: 10px;
         }
-        
-        /* THE PREMIUM BORDER CARD */
-        .item-card { 
-            background: var(--card-bg); 
-            border-radius: 24px; 
-            padding: 1px; /* The "thickness" of the gradient border */
-            margin-bottom: 18px; 
-            display: flex; 
-            position: relative;
-            /* This creates the gradient border effect */
+
+        .item-card {
             background-image: var(--premium-border);
+            border-radius: 24px;
+            padding: 1px;
+            margin-bottom: 18px;
+            display: flex;
+            position: relative;
             box-shadow: 0 4px 12px rgba(0,0,0,0.02);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        /* The actual content inside the card to keep it white */
         .item-inner {
             background: white;
-            border-radius: 23px; /* Slightly smaller than card to show border */
+            border-radius: 23px;
             padding: 14px;
             display: flex;
             align-items: center;
             gap: 16px;
             width: 100%;
         }
-
-        .item-card:hover { 
-            transform: translateY(-3px); 
+        .item-card:hover {
+            transform: translateY(-3px);
             box-shadow: 0 12px 30px rgba(0,0,0,0.08);
             background-image: linear-gradient(135deg, var(--accent) 0%, #cbd5e1 100%);
         }
-        
-        .item-img { 
-            width: 75px; 
-            height: 75px; 
-            border-radius: 16px; 
-            object-fit: cover; 
+
+        .item-img {
+            width: 75px;
+            height: 75px;
+            border-radius: 16px;
+            object-fit: cover;
             background: #f8fafc;
             border: 1px solid #f1f5f9;
+            flex-shrink: 0;
         }
-        
-        .item-info { flex: 1; }
-        .item-name { font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
-        .item-price { 
-            font-weight: 800; 
-            color: var(--accent); 
+        .item-img-placeholder {
+            width: 75px;
+            height: 75px;
+            border-radius: 16px;
+            background: #f8fafc;
+            border: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .item-info { flex: 1; min-width: 0; }
+        .item-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 2px;
+            /* Prevent XSS-injected long strings from blowing layout */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .item-desc {
+            font-size: 0.82rem;
+            color: #64748b;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .item-price {
+            font-weight: 800;
+            color: var(--accent);
             font-size: 1rem;
             letter-spacing: -0.5px;
         }
-        
+
         .hidden { display: none !important; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <div id="loader">
-        <div style="text-align:center">
+        <!-- Spinner (default state) -->
+        <div id="loader-spinner" style="text-align:center">
             <div style="width:25px;height:25px;border:3px solid #f3f4f6;border-left-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto"></div>
+        </div>
+        <!-- Error state (shown on failure) -->
+        <div id="loader-error">
+            <div class="err-icon">🍽️</div>
+            <h3 id="loader-error-title">Menu not found</h3>
+            <p id="loader-error-msg">This menu link appears to be invalid or no longer available.</p>
         </div>
     </div>
 
@@ -160,54 +206,152 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const db  = getFirestore(app);
 
+    /* ─── XSS sanitizer ──────────────────────────────────────────────── */
+    const esc = s => String(s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+    /* Only allow https:// image URLs — blocks data: and javascript: URIs */
+    const safeImg = url => (typeof url === 'string' && url.startsWith('https://')) ? url : null;
+
+    /* ─── Error helper ───────────────────────────────────────────────── */
+    function showError(title, msg) {
+        document.getElementById('loader-spinner').style.display = 'none';
+        document.getElementById('loader-error-title').textContent = title;
+        document.getElementById('loader-error-msg').textContent   = msg;
+        document.getElementById('loader-error').style.display     = 'block';
+    }
+
+    /* ─── Main loader ────────────────────────────────────────────────── */
     async function load() {
         const id = new URLSearchParams(window.location.search).get('id');
-        if (!id) return;
+
+        if (!id) {
+            showError('No menu ID', 'Please scan the correct QR code or use a valid link.');
+            return;
+        }
 
         try {
             const snap = await getDoc(doc(db, "restaurants", id));
-            if (snap.exists()) {
-                const data = snap.data();
-                document.getElementById('res-name').innerText = data.name || "Premium Menu";
-                if(data.logo) document.getElementById('logo-box').innerHTML = `<img src="${data.logo}" class="logo">`;
-                
-                const list = document.getElementById('list');
-                data.categories.forEach(cat => {
-                    if (cat.items && cat.items.length > 0) {
-                        let catHtml = `<div class="cat-section"><div class="cat-title">${cat.name.toUpperCase()}</div>`;
-                        cat.items.forEach(item => {
-                            if(item.name) {
-                                catHtml += `
-                                    <div class="item-card">
-                                        <div class="item-inner">
-                                            ${item.img ? `<img src="${item.img}" class="item-img">` : '<div class="item-img" style="display:flex;align-items:center;justify-content:center;background:#f8fafc;font-size:1.5rem">✨</div>'}
-                                            <div class="item-info">
-                                                <div class="item-name">${item.name}</div>
-                                                <div class="item-price">${item.price}</div>
-                                            </div>
-                                        </div>
-                                    </div>`;
-                            }
-                        });
-                        catHtml += `</div>`;
-                        list.innerHTML += catHtml;
+
+            if (!snap.exists()) {
+                showError('Menu not found', 'This menu is no longer available or has been removed.');
+                return;
+            }
+
+            const data = snap.data();
+            const name = data.name || "Our Menu";
+
+            /* ── Page title + OG tags (dynamic) ── */
+            document.title = name + ' | Menu';
+            document.getElementById('og-title').setAttribute('content', name);
+            document.getElementById('og-description').setAttribute('content', 'View the full menu for ' + name);
+            if (safeImg(data.logo)) {
+                document.getElementById('og-image').setAttribute('content', data.logo);
+            }
+
+            /* ── Hero ── */
+            document.getElementById('res-name').textContent = name;
+            if (safeImg(data.logo)) {
+                const img = document.createElement('img');
+                img.src       = data.logo;
+                img.className = 'logo';
+                img.alt       = name + ' logo';
+                document.getElementById('logo-box').appendChild(img);
+            }
+
+            /* ── Menu list (DOM-built, no innerHTML with user data) ── */
+            const list = document.getElementById('list');
+
+            (data.categories || []).forEach(cat => {
+                if (!cat.items || cat.items.length === 0) return;
+
+                const section  = document.createElement('div');
+                section.className = 'cat-section';
+
+                const title = document.createElement('div');
+                title.className   = 'cat-title';
+                title.textContent = (cat.name || 'Uncategorised').toUpperCase();
+                section.appendChild(title);
+
+                cat.items.forEach(item => {
+                    if (!item.name) return;
+
+                    const card  = document.createElement('div');
+                    card.className = 'item-card';
+
+                    const inner = document.createElement('div');
+                    inner.className = 'item-inner';
+
+                    /* Image or placeholder */
+                    const imgUrl = safeImg(item.img);
+                    if (imgUrl) {
+                        const img = document.createElement('img');
+                        img.src       = imgUrl;
+                        img.className = 'item-img';
+                        img.alt       = item.name;
+                        img.onerror   = () => { img.replaceWith(placeholder()); };
+                        inner.appendChild(img);
+                    } else {
+                        inner.appendChild(placeholder());
                     }
+
+                    /* Info */
+                    const info = document.createElement('div');
+                    info.className = 'item-info';
+
+                    const nameEl = document.createElement('div');
+                    nameEl.className   = 'item-name';
+                    nameEl.textContent = item.name;
+                    info.appendChild(nameEl);
+
+                    if (item.description) {
+                        const desc = document.createElement('div');
+                        desc.className   = 'item-desc';
+                        desc.textContent = item.description;
+                        info.appendChild(desc);
+                    }
+
+                    const price = document.createElement('div');
+                    price.className   = 'item-price';
+                    price.textContent = item.price || '';
+                    info.appendChild(price);
+
+                    inner.appendChild(info);
+                    card.appendChild(inner);
+                    section.appendChild(card);
                 });
 
-                const loader = document.getElementById('loader');
-                loader.style.opacity = '0';
-                setTimeout(() => {
-                    loader.remove();
-                    document.getElementById('content').classList.remove('hidden');
-                }, 400);
-            }
-        } catch (e) { console.error(e); }
+                list.appendChild(section);
+            });
+
+            /* ── Reveal ── */
+            const loader = document.getElementById('loader');
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.remove();
+                document.getElementById('content').classList.remove('hidden');
+            }, 400);
+
+        } catch (e) {
+            console.error(e);
+            showError('Something went wrong', 'Could not load the menu. Please try again.');
+        }
     }
+
+    function placeholder() {
+        const el = document.createElement('div');
+        el.className   = 'item-img-placeholder';
+        el.textContent = '✨';
+        return el;
+    }
+
     load();
 </script>
-
-<style> @keyframes spin { to { transform: rotate(360deg); } } </style>
 </body>
 </html>
