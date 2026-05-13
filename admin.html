@@ -3,44 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu Admin Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Partner Dashboard | Menu Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #111827; --accent: #10b981; }
-        body { font-family: 'Inter', sans-serif; background: #f3f4f6; margin: 0; padding: 20px; }
-        .card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; max-width: 600px; margin: auto; }
-        .hidden { display: none; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; }
-        button { cursor: pointer; border: none; border-radius: 8px; font-weight: 600; padding: 12px; transition: 0.2s; }
-        .btn-main { background: var(--primary); color: white; width: 100%; }
-        .btn-save { background: var(--accent); color: white; position: fixed; bottom: 20px; right: 20px; padding: 15px 30px; z-index: 1000; }
-        .item-box { background: #f9fafb; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #e5e7eb; }
+        :root { --primary: #111827; --accent: #10b981; --danger: #ef4444; --bg: #f9fafb; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; color: var(--primary); }
+        
+        /* Auth Screen */
+        .auth-overlay { position: fixed; inset: 0; background: var(--primary); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        .auth-card { background: white; padding: 40px; border-radius: 24px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        
+        /* Dashboard Layout */
+        .nav-bar { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; sticky: top; }
+        .main-container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        
+        /* Cards & Inputs */
+        .card { background: white; padding: 25px; border-radius: 16px; border: 1px solid #e5e7eb; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #d1d5db; border-radius: 10px; font-family: inherit; font-size: 14px; box-sizing: border-box; }
+        input:focus { outline: none; border-color: var(--accent); ring: 2px var(--accent); }
+        
+        /* Buttons */
+        button { cursor: pointer; border: none; border-radius: 10px; font-weight: 600; transition: 0.2s; padding: 12px 20px; font-family: inherit; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-accent { background: var(--accent); color: white; }
+        .btn-outline { background: transparent; border: 1px solid #d1d5db; color: var(--primary); }
+        .btn-danger { background: #fee2e2; color: var(--danger); }
+        
+        .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; border-top: 1px solid #e5e7eb; display: flex; justify-content: center; gap: 10px; }
+        
+        .item-box { background: #f3f4f6; padding: 15px; border-radius: 12px; margin-top: 10px; position: relative; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div id="auth-container" class="card">
-    <h2>Partner Sign Up / Login</h2>
-    <input type="email" id="email" placeholder="Email Address">
-    <input type="password" id="password" placeholder="Password">
-    <button class="btn-main" id="auth-btn">Start My Menu</button>
-</div>
-
-<div id="admin-panel" class="hidden">
-    <div class="card">
-        <h3>Shop Details</h3>
-        <input type="text" id="res-name" placeholder="Restaurant Name">
-        <input type="text" id="res-logo" placeholder="Logo Image URL">
+<!-- AUTH SECTION -->
+<div id="auth-screen" class="auth-overlay">
+    <div class="auth-card">
+        <h2 style="margin-top:0">Partner Portal</h2>
+        <p style="color:#6b7280; margin-bottom:25px">Sign in or create your account</p>
+        <input type="email" id="email" placeholder="Email Address">
+        <input type="password" id="password" placeholder="Password">
+        <button class="btn-primary" style="width:100%; margin-top:10px" id="auth-btn">Get Started</button>
     </div>
-    <div id="categories-container"></div>
-    <button onclick="addCategory()" style="background: #374151; color: white; margin-bottom: 100px;">+ Add Category</button>
 </div>
 
-<button id="save-btn" class="btn-save hidden">Publish Changes</button>
+<!-- DASHBOARD SECTION -->
+<div id="dashboard" class="hidden">
+    <nav class="nav-bar">
+        <span style="font-weight:800; font-size:1.2rem; color:var(--accent)">MENU.OS</span>
+        <button class="btn-danger" id="logout-btn">Sign Out</button>
+    </nav>
+
+    <div class="main-container">
+        <div class="card">
+            <h3 style="margin-top:0">1. Branding</h3>
+            <label style="font-size: 12px; font-weight: 700;">RESTAURANT NAME</label>
+            <input type="text" id="res-name" placeholder="e.g. The Coffee House">
+            <label style="font-size: 12px; font-weight: 700; margin-top: 10px; display: block;">LOGO URL</label>
+            <input type="text" id="res-logo" placeholder="Link to your image">
+        </div>
+
+        <div id="categories-container"></div>
+        
+        <button class="btn-outline" onclick="addCategory()" style="width:100%; margin-bottom: 100px;">+ Add New Category</button>
+    </div>
+
+    <div class="save-bar">
+        <button class="btn-accent" id="save-btn" style="padding: 15px 40px; font-size: 1rem;">Publish Menu</button>
+    </div>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -49,8 +85,7 @@
         projectId: "cofee-shop-26e73",
         storageBucket: "cofee-shop-26e73.firebasestorage.app",
         messagingSenderId: "1078896374249",
-        appId: "1:1078896374249:web:e633362be7cca4a9479b78",
-        measurementId: "G-KLGNXCJXBG"
+        appId: "1:1078896374249:web:e633362be7cca4a9479b78"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -60,6 +95,7 @@
     let currentUID = null;
     let menuData = { categories: [] };
 
+    // --- Auth Logic ---
     document.getElementById('auth-btn').onclick = async () => {
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
@@ -68,20 +104,25 @@
         } catch (e) {
             try {
                 await createUserWithEmailAndPassword(auth, email, pass);
-            } catch (err) { alert(err.message); }
+            } catch (err) { alert("Error: " + err.message); }
         }
     };
+
+    document.getElementById('logout-btn').onclick = () => signOut(auth);
 
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             currentUID = user.uid;
-            document.getElementById('auth-container').classList.add('hidden');
-            document.getElementById('admin-panel').classList.remove('hidden');
-            document.getElementById('save-btn').classList.remove('hidden');
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
             loadMenu();
+        } else {
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
         }
     });
 
+    // --- Menu Building ---
     window.addCategory = () => {
         menuData.categories.push({ name: "New Category", items: [] });
         render();
@@ -97,45 +138,37 @@
         container.innerHTML = '';
         menuData.categories.forEach((cat, cIdx) => {
             let html = `<div class="card">
-                <input type="text" value="${cat.name}" onchange="menuData.categories[${cIdx}].name=this.value">
+                <input type="text" value="${cat.name}" onchange="menuData.categories[${cIdx}].name=this.value" style="font-weight:700; border:none; border-bottom:1px solid #eee; border-radius:0; font-size:1.2rem">
                 <div id="items-${cIdx}">`;
             cat.items.forEach((item, iIdx) => {
                 html += `<div class="item-box">
                     <input type="text" placeholder="Item Name" value="${item.name}" onchange="menuData.categories[${cIdx}].items[${iIdx}].name=this.value">
-                    <input type="text" placeholder="Price" value="${item.price}" onchange="menuData.categories[${cIdx}].items[${iIdx}].price=this.value">
+                    <input type="text" placeholder="Price (e.g. $10)" value="${item.price}" onchange="menuData.categories[${cIdx}].items[${iIdx}].price=this.value">
                     <input type="text" placeholder="Image URL" value="${item.img}" onchange="menuData.categories[${cIdx}].items[${iIdx}].img=this.value">
                 </div>`;
             });
-            html += `</div><button onclick="addItem(${cIdx})">+ Add Item</button></div>`;
+            html += `</div><button class="btn-outline" style="margin-top:15px; width:100%" onclick="addItem(${cIdx})">+ Add Item</button></div>`;
             container.innerHTML += html;
         });
     }
 
+    // --- Save & Link Generation ---
     document.getElementById('save-btn').onclick = async () => {
-    const btn = document.getElementById('save-btn');
-    btn.innerText = "Publishing...";
-    
-    const payload = {
-        name: document.getElementById('res-name').value,
-        logo: document.getElementById('res-logo').value,
-        categories: menuData.categories
+        const btn = document.getElementById('save-btn');
+        btn.innerText = "Publishing...";
+        const payload = {
+            name: document.getElementById('res-name').value,
+            logo: document.getElementById('res-logo').value,
+            categories: menuData.categories
+        };
+        try {
+            await setDoc(doc(db, "restaurants", currentUID), payload);
+            const liveLink = window.location.href.replace('admin.html', 'menu.html') + "?id=" + currentUID;
+            alert("🚀 LIVE! Your menu link is:\n\n" + liveLink);
+        } catch (err) { alert(err.message); }
+        finally { btn.innerText = "Publish Menu"; }
     };
 
-    try {
-        await setDoc(doc(db, "restaurants", currentUID), payload);
-        
-        // AUTO-GENERATE THE LINK FOR THEM
-        const liveLink = window.location.href.replace('admin.html', 'menu.html') + "?id=" + currentUID;
-        
-        alert("✅ Success! Your Menu is live at:\n\n" + liveLink);
-        console.log("Customer Link:", liveLink);
-        
-    } catch (err) {
-        alert("Error: " + err.message);
-    } finally {
-        btn.innerText = "Publish Changes";
-    }
-};
     async function loadMenu() {
         const snap = await getDoc(doc(db, "restaurants", currentUID));
         if (snap.exists()) {
