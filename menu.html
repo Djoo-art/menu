@@ -3,31 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu</title>
+    <title>Digital Menu | Premium</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #10b981; --dark: #111827; --gray: #f3f4f6; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; background: var(--gray); color: var(--dark); }
-        .hero { background: var(--dark); padding: 60px 20px; text-align: center; color: white; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }
-        .logo { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover; margin-bottom: 15px; background: white; }
-        .container { max-width: 600px; margin: -30px auto 0; padding: 0 15px 50px; }
-        .cat-title { font-size: 1.2rem; font-weight: 800; margin: 40px 0 15px; display: flex; align-items: center; gap: 10px; }
-        .cat-title::after { content: ''; flex: 1; height: 1px; background: #cbd5e1; }
-        .item-card { background: white; border-radius: 20px; padding: 15px; margin-bottom: 12px; display: flex; gap: 15px; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .item-img { width: 70px; height: 70px; border-radius: 12px; object-fit: cover; background: #eee; }
+        :root { --accent: #10b981; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
+        body, html { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+        
+        /* Fixed Loading Screen Fix */
+        #loader { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
+        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-left-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .hero { background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); padding: 60px 20px 40px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .logo { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--accent); object-fit: cover; background: white; box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+        
+        .container { max-width: 600px; margin: 0 auto; padding: 20px 15px 100px; }
+        .cat-section { margin-top: 40px; }
+        .cat-title { font-size: 1.4rem; font-weight: 800; color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
+        .cat-title::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+        
+        .item-card { background: var(--card); border-radius: 24px; padding: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px; border: 1px solid rgba(255,255,255,0.03); transition: transform 0.2s; }
+        .item-card:active { transform: scale(0.98); }
+        .item-img { width: 85px; height: 85px; border-radius: 18px; object-fit: cover; background: #334155; }
         .item-info { flex: 1; }
-        .item-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 2px; display: block; }
-        .item-price { color: var(--accent); font-weight: 800; }
-        #loader { display: flex; height: 100vh; justify-content: center; align-items: center; font-weight: 700; }
-        .hidden { display: none; }
+        .item-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; display: block; }
+        .item-price { font-weight: 800; color: var(--accent); font-size: 1rem; background: rgba(16, 185, 129, 0.1); padding: 4px 12px; border-radius: 8px; display: inline-block; }
+        
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <div id="loader">Loading...</div>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <p style="margin-top:15px; opacity:0.6">Curating Menu...</p>
+    </div>
+
     <div id="content" class="hidden">
         <div class="hero">
             <div id="logo-box"></div>
-            <h1 id="res-name" style="margin:0"></h1>
+            <h1 id="res-name" style="margin:15px 0 0; font-size: 2.2rem; letter-spacing: -1px;"></h1>
         </div>
         <div class="container" id="list"></div>
     </div>
@@ -49,32 +64,46 @@
     const db = getFirestore(app);
 
     async function load() {
-        const id = new URLSearchParams(window.location.search).get('id');
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
         if (!id) return;
-        const snap = await getDoc(doc(db, "restaurants", id));
-        if (snap.exists()) {
-            const data = snap.data();
-            document.getElementById('loader').classList.add('hidden');
-            document.getElementById('content').classList.remove('hidden');
-            document.getElementById('res-name').innerText = data.name || "Menu";
-            if(data.logo) document.getElementById('logo-box').innerHTML = `<img src="${data.logo}" class="logo">`;
-            
-            const list = document.getElementById('list');
-            data.categories.forEach(cat => {
-                let html = `<div class="cat-title">${cat.name}</div>`;
-                cat.items.forEach(item => {
-                    if(item.name) {
-                        html += `<div class="item-card">
-                            ${item.img ? `<img src="${item.img}" class="item-img">` : ''}
-                            <div class="item-info">
-                                <span class="item-name">${item.name}</span>
-                                <span class="item-price">${item.price}</span>
-                            </div>
-                        </div>`;
+
+        try {
+            const snap = await getDoc(doc(db, "restaurants", id));
+            if (snap.exists()) {
+                const data = snap.data();
+                
+                // Set Branding
+                document.getElementById('res-name').innerText = data.name || "Menu";
+                if(data.logo) document.getElementById('logo-box').innerHTML = `<img src="${data.logo}" class="logo">`;
+                
+                const list = document.getElementById('list');
+                data.categories.forEach(cat => {
+                    if (cat.items && cat.items.length > 0) {
+                        let catHtml = `<div class="cat-section"><div class="cat-title">${cat.name}</div>`;
+                        cat.items.forEach(item => {
+                            if(item.name) {
+                                catHtml += `
+                                    <div class="item-card">
+                                        ${item.img ? `<img src="${item.img}" class="item-img" onerror="this.style.display='none'">` : '<div class="item-img" style="display:flex;align-items:center;justify-content:center;font-size:2rem">🍽️</div>'}
+                                        <div class="item-info">
+                                            <span class="item-name">${item.name}</span>
+                                            <span class="item-price">${item.price}</span>
+                                        </div>
+                                    </div>`;
+                            }
+                        });
+                        catHtml += `</div>`;
+                        list.innerHTML += catHtml;
                     }
                 });
-                list.innerHTML += html;
-            });
+
+                // REMOVE LOADER COMPLETELY
+                document.getElementById('loader').remove(); 
+                document.getElementById('content').classList.remove('hidden');
+            }
+        } catch (e) {
+            console.error("Error loading menu:", e);
         }
     }
     load();
