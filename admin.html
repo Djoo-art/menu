@@ -3,73 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin | Menu.OS</title>
+    <title>Admin Dashboard | Menu.OS</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #111827; --accent: #10b981; --bg: #f9fafb; --danger: #ef4444; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; color: var(--primary); }
-        
-        /* Modal Style for Link Copying */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 3000; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; }
-        
+        .modal-content { background: white; padding: 30px; border-radius: 24px; text-align: center; max-width: 400px; width: 90%; }
         .auth-overlay { position: fixed; inset: 0; background: var(--primary); display: flex; align-items: center; justify-content: center; z-index: 2000; }
         .auth-card { background: white; padding: 40px; border-radius: 24px; width: 90%; max-width: 380px; text-align: center; }
         .nav { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 100; }
         .container { max-width: 700px; margin: 40px auto; padding: 0 20px 120px; }
         .card { background: white; padding: 25px; border-radius: 20px; border: 1px solid #e5e7eb; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #d1d5db; border-radius: 12px; font-family: inherit; box-sizing: border-box; }
         button { cursor: pointer; border: none; border-radius: 12px; font-weight: 600; padding: 12px 20px; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; width: 100%; }
         .btn-accent { background: var(--accent); color: white; padding: 15px 40px; }
         .btn-outline { background: #f3f4f6; color: var(--primary); width: 100%; margin-top: 10px; }
-        .item-box { background: #f9fafb; padding: 15px; border-radius: 15px; margin-top: 10px; border: 1px solid #eee; position: relative; }
+        .item-box { background: #f9fafb; padding: 15px; border-radius: 15px; margin-top: 10px; border: 1px solid #eee; }
         .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 20px; border-top: 1px solid #e5e7eb; text-align: center; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<!-- Copy Link Modal -->
 <div id="link-modal" class="modal">
     <div class="modal-content">
-        <h3 style="margin-top:0">Menu is Live! 🚀</h3>
-        <p style="font-size: 0.9rem; color: #666;">Copy the link below to share your menu or create your QR code.</p>
-        <input type="text" id="live-link-input" readonly style="background: #f3f4f6; text-align: center;">
-        <button class="btn-primary" id="copy-btn" style="margin-top: 10px;">Copy to Clipboard</button>
-        <button class="btn-outline" onclick="closeModal()">Close</button>
+        <h3 style="margin-top:0">Success! 🚀</h3>
+        <input type="text" id="live-link-input" readonly style="background: #f3f4f6; text-align: center; margin: 20px 0;">
+        <button class="btn-primary" id="copy-btn">Copy Link</button>
+        <button class="btn-outline" onclick="document.getElementById('link-modal').style.display='none'">Close</button>
     </div>
 </div>
 
 <div id="auth-screen" class="auth-overlay">
     <div class="auth-card">
         <h2>Partner Portal</h2>
-        <input type="email" id="email" placeholder="Email Address">
+        <input type="email" id="email" placeholder="Email">
         <input type="password" id="password" placeholder="Password">
-        <button class="btn-primary" id="auth-btn">Sign In / Sign Up</button>
+        <button class="btn-primary" id="auth-btn">Sign In</button>
     </div>
 </div>
 
 <div id="dashboard" class="hidden">
     <nav class="nav">
         <span style="font-weight:800; color:var(--accent)">MENU.OS</span>
-        <button style="background:#fee2e2; color:var(--danger); font-size:0.8rem" id="logout-btn">Sign Out</button>
+        <button style="background:#fee2e2; color:var(--danger)" id="logout-btn">Sign Out</button>
     </nav>
 
     <div class="container">
         <div class="card">
-            <h3 style="margin-top:0">Branding</h3>
+            <h3>Store Branding</h3>
             <input type="text" id="res-name" placeholder="Restaurant Name">
             <input type="text" id="res-logo" placeholder="Logo Image URL">
         </div>
-
         <div id="categories-container"></div>
-        <button class="btn-outline" onclick="addCategory()">+ New Category</button>
+        <button class="btn-outline" onclick="addCategory()">+ Add Category</button>
     </div>
 
     <div class="save-bar">
-        <button class="btn-accent" id="save-btn">Publish Menu</button>
+        <button class="btn-accent" id="save-btn">Publish Changes</button>
     </div>
 </div>
 
@@ -94,16 +87,16 @@
     let currentUID = null;
     let menuData = { categories: [] };
 
+    // Auth
     document.getElementById('auth-btn').onclick = async () => {
         const e = document.getElementById('email').value;
         const p = document.getElementById('password').value;
         try { await signInWithEmailAndPassword(auth, e, p); }
         catch { try { await createUserWithEmailAndPassword(auth, e, p); } catch(err) { alert(err.message); } }
     };
-
     document.getElementById('logout-btn').onclick = () => signOut(auth);
 
-    onAuthStateChanged(auth, async (user) => {
+    onAuthStateChanged(auth, user => {
         if (user) {
             currentUID = user.uid;
             document.getElementById('auth-screen').classList.add('hidden');
@@ -115,21 +108,28 @@
         }
     });
 
-    window.addCategory = () => { menuData.categories.push({ name: "New Category", items: [] }); render(); };
+    // Menu Logic
+    window.addCategory = () => { menuData.categories.push({ name: "", items: [] }); render(); };
     window.addItem = (idx) => { menuData.categories[idx].items.push({ name: "", price: "", img: "" }); render(); };
+    
+    // This function captures what you type and updates the data object
+    window.updateData = (cIdx, iIdx, field, value) => {
+        if (iIdx === null) menuData.categories[cIdx].name = value;
+        else menuData.categories[cIdx].items[iIdx][field] = value;
+    };
 
     function render() {
         const container = document.getElementById('categories-container');
         container.innerHTML = '';
         menuData.categories.forEach((cat, cIdx) => {
             let html = `<div class="card">
-                <input type="text" value="${cat.name}" onchange="menuData.categories[${cIdx}].name=this.value" style="font-weight:700; border:none; border-bottom:2px solid var(--accent); border-radius:0">
+                <input type="text" placeholder="Category Name" value="${cat.name}" oninput="updateData(${cIdx}, null, 'name', this.value)" style="font-weight:700;">
                 <div id="items-${cIdx}">`;
             cat.items.forEach((item, iIdx) => {
                 html += `<div class="item-box">
-                    <input type="text" placeholder="Dish Name (e.g. Pizza)" value="${item.name}" onchange="menuData.categories[${cIdx}].items[${iIdx}].name=this.value">
-                    <input type="text" placeholder="Price (e.g. $10)" value="${item.price}" onchange="menuData.categories[${cIdx}].items[${iIdx}].price=this.value">
-                    <input type="text" placeholder="Image URL (Optional)" value="${item.img}" onchange="menuData.categories[${cIdx}].items[${iIdx}].img=this.value">
+                    <input type="text" placeholder="Item Name" value="${item.name}" oninput="updateData(${cIdx}, ${iIdx}, 'name', this.value)">
+                    <input type="text" placeholder="Price" value="${item.price}" oninput="updateData(${cIdx}, ${iIdx}, 'price', this.value)">
+                    <input type="text" placeholder="Image URL" value="${item.img}" oninput="updateData(${cIdx}, ${iIdx}, 'img', this.value)">
                 </div>`;
             });
             html += `</div><button class="btn-outline" onclick="addItem(${cIdx})">+ Add Item</button></div>`;
@@ -138,32 +138,30 @@
     }
 
     document.getElementById('save-btn').onclick = async () => {
-        document.getElementById('save-btn').innerText = "Publishing...";
+        const btn = document.getElementById('save-btn');
+        btn.innerText = "Publishing...";
+        
         const payload = {
             name: document.getElementById('res-name').value,
             logo: document.getElementById('res-logo').value,
             categories: menuData.categories
         };
+
         try {
             await setDoc(doc(db, "restaurants", currentUID), payload);
-            const liveLink = window.location.origin + window.location.pathname.replace('admin.html', 'menu.html') + "?id=" + currentUID;
-            
-            // Show custom modal
+            const liveLink = window.location.href.replace('admin.html', 'menu.html') + "?id=" + currentUID;
             document.getElementById('live-link-input').value = liveLink;
             document.getElementById('link-modal').style.display = 'flex';
-            
         } catch (err) { alert(err.message); }
-        finally { document.getElementById('save-btn').innerText = "Publish Menu"; }
+        finally { btn.innerText = "Publish Changes"; }
     };
 
-    window.closeModal = () => { document.getElementById('link-modal').style.display = 'none'; };
-
     document.getElementById('copy-btn').onclick = () => {
-        const input = document.getElementById('live-link-input');
-        input.select();
+        const el = document.getElementById('live-link-input');
+        el.select();
         document.execCommand('copy');
         document.getElementById('copy-btn').innerText = "Copied!";
-        setTimeout(() => { document.getElementById('copy-btn').innerText = "Copy to Clipboard"; }, 2000);
+        setTimeout(() => { document.getElementById('copy-btn').innerText = "Copy Link"; }, 2000);
     };
 
     async function loadMenu() {
