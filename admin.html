@@ -112,18 +112,30 @@
     }
 
     document.getElementById('save-btn').onclick = async () => {
-        const btn = document.getElementById('save-btn');
-        btn.innerText = "Saving...";
-        const payload = {
-            name: document.getElementById('res-name').value,
-            logo: document.getElementById('res-logo').value,
-            categories: menuData.categories
-        };
-        await setDoc(doc(db, "restaurants", currentUID), payload);
-        btn.innerText = "Publish Changes";
-        alert("Published! Your ID is: " + currentUID);
+    const btn = document.getElementById('save-btn');
+    btn.innerText = "Publishing...";
+    
+    const payload = {
+        name: document.getElementById('res-name').value,
+        logo: document.getElementById('res-logo').value,
+        categories: menuData.categories
     };
 
+    try {
+        await setDoc(doc(db, "restaurants", currentUID), payload);
+        
+        // AUTO-GENERATE THE LINK FOR THEM
+        const liveLink = window.location.href.replace('admin.html', 'menu.html') + "?id=" + currentUID;
+        
+        alert("✅ Success! Your Menu is live at:\n\n" + liveLink);
+        console.log("Customer Link:", liveLink);
+        
+    } catch (err) {
+        alert("Error: " + err.message);
+    } finally {
+        btn.innerText = "Publish Changes";
+    }
+};
     async function loadMenu() {
         const snap = await getDoc(doc(db, "restaurants", currentUID));
         if (snap.exists()) {
