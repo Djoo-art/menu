@@ -8,69 +8,30 @@
     <style>
         :root { --accent: #10b981; --dark: #111827; --gray: #f3f4f6; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; background: var(--gray); color: var(--dark); }
-        
-        /* Full width header with no top gaps */
-        .hero { 
-            background: var(--dark); 
-            padding: 60px 20px; 
-            text-align: center; 
-            color: white;
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        .logo { 
-            width: 100px; height: 100px; 
-            border-radius: 50%; 
-            border: 4px solid var(--accent);
-            object-fit: cover;
-            margin-bottom: 15px;
-            background: white;
-        }
-        .container { max-width: 600px; margin: -30px auto 100px; padding: 0 20px; }
-        
-        .category-block { margin-top: 40px; }
-        .category-name { 
-            font-size: 1.4rem; font-weight: 800; 
-            margin-bottom: 20px; 
-            color: var(--dark);
-            display: flex; align-items: center; gap: 10px;
-        }
-        .category-name::after { content: ''; flex: 1; height: 2px; background: #e5e7eb; }
-
-        .item-card { 
-            background: white; 
-            border-radius: 20px; 
-            padding: 15px; 
-            margin-bottom: 15px; 
-            display: flex; gap: 15px; align-items: center;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            transition: transform 0.2s;
-        }
-        .item-img { width: 85px; height: 85px; border-radius: 15px; object-fit: cover; }
-        .item-details { flex: 1; }
-        .item-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 4px; }
-        .item-price { 
-            color: var(--accent); font-weight: 800; 
-            background: #ecfdf5; padding: 4px 10px; 
-            border-radius: 8px; font-size: 0.9rem;
-        }
-        
+        .hero { background: var(--dark); padding: 50px 20px; text-align: center; color: white; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }
+        .logo { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover; margin-bottom: 15px; background: white; }
+        .container { max-width: 600px; margin: -30px auto 80px; padding: 0 15px; }
+        .category-header { font-size: 1.3rem; font-weight: 800; margin: 35px 0 15px; display: flex; align-items: center; gap: 10px; }
+        .category-header::after { content: ''; flex: 1; height: 2px; background: #ddd; }
+        .item-card { background: white; border-radius: 20px; padding: 15px; margin-bottom: 12px; display: flex; gap: 15px; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .item-img { width: 80px; height: 80px; border-radius: 15px; object-fit: cover; background: #eee; }
+        .item-info { flex: 1; }
+        .item-name { font-weight: 700; font-size: 1.05rem; display: block; margin-bottom: 4px; }
+        .item-price { color: var(--accent); font-weight: 800; font-size: 0.95rem; }
         #loader { display: flex; height: 100vh; justify-content: center; align-items: center; font-weight: 700; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="loader">Loading Experience...</div>
+    <div id="loader">Preparing Menu...</div>
 
     <div id="main-content" class="hidden">
         <div class="hero">
             <div id="logo-slot"></div>
-            <h1 id="res-name" style="margin:0; letter-spacing: -1px;"></h1>
+            <h1 id="res-name" style="margin:0; font-size: 1.8rem;"></h1>
         </div>
-
-        <div class="container" id="menu-data"></div>
+        <div class="container" id="menu-list"></div>
     </div>
 
 <script type="module">
@@ -89,37 +50,37 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    async function init() {
+    async function load() {
         const id = new URLSearchParams(window.location.search).get('id');
         if (!id) return;
 
-        const snap = await getDoc(doc(db, "restaurants", id));
-        if (snap.exists()) {
-            const data = snap.data();
-            document.getElementById('loader').classList.add('hidden');
-            document.getElementById('main-content').classList.remove('hidden');
-            
-            document.getElementById('res-name').innerText = data.name;
-            if(data.logo) document.getElementById('logo-slot').innerHTML = `<img src="${data.logo}" class="logo">`;
-            
-            const list = document.getElementById('menu-data');
-            data.categories.forEach(cat => {
-                let html = `<div class="category-block"><div class="category-name">${cat.name}</div>`;
-                cat.items.forEach(item => {
-                    html += `
-                        <div class="item-card">
+        try {
+            const snap = await getDoc(doc(db, "restaurants", id));
+            if (snap.exists()) {
+                const data = snap.data();
+                document.getElementById('loader').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                document.getElementById('res-name').innerText = data.name || "Our Menu";
+                if(data.logo) document.getElementById('logo-slot').innerHTML = `<img src="${data.logo}" class="logo">`;
+                
+                const list = document.getElementById('menu-list');
+                data.categories.forEach(cat => {
+                    let html = `<div class="category-header">${cat.name}</div>`;
+                    cat.items.forEach(item => {
+                        html += `<div class="item-card">
                             ${item.img ? `<img src="${item.img}" class="item-img">` : ''}
-                            <div class="item-details">
-                                <div class="item-name">${item.name}</div>
+                            <div class="item-info">
+                                <span class="item-name">${item.name}</span>
                                 <span class="item-price">${item.price}</span>
                             </div>
                         </div>`;
+                    });
+                    list.innerHTML += html;
                 });
-                list.innerHTML += html + `</div>`;
-            });
-        }
+            }
+        } catch (e) { console.error(e); }
     }
-    init();
+    load();
 </script>
 </body>
 </html>
